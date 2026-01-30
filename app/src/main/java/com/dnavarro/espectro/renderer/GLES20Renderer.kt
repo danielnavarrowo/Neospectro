@@ -4,14 +4,17 @@ import android.content.Context
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.graphics.BitmapFactory
+import android.graphics.Bitmap // Added
+import android.graphics.Color  // Added
 import android.opengl.GLUtils
-import com.dnavarro.espectro.R
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import androidx.core.graphics.createBitmap
+import kotlin.math.abs
+import androidx.core.graphics.set
 
 class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
@@ -20,7 +23,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
     // Vertex Buffer: 1024 lines * 2 vertices * 4 floats (x,y,s,t)
     private val mPoints = FloatArray(SpectrumLogic.ARRAY_SIZE)
-    private lateinit var mVertexBuffer: FloatBuffer
+    private var mVertexBuffer: FloatBuffer
 
     // Matrices
     private val mMVPMatrix = FloatArray(16)
@@ -35,8 +38,9 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     private var mTextureUniformHandle = 0
     private var mTextureId = 0
 
-    // Default texture
-    var mCurrentTextureResId = R.drawable.ice
+    // Colors
+    var mEdgeColor: Int = Color.rgb(3, 3, 255)
+    var mCenterColor: Int = Color.WHITE
 
     private var mWidth = 0
     private var mHeight = 0
@@ -78,8 +82,13 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(0f, 0f, 0f, 1f)
 
-        // Load Texture
-        mTextureId = loadTexture(context, mCurrentTextureResId)
+        // Get Density for SpectrumLogic logic
+        val density = context.resources.displayMetrics.density
+        mSpectrumLogic.density = density
+
+        // Load Texture from Color
+        val bitmap = generateGradientBitmap(mEdgeColor, mCenterColor)
+        mTextureId = loadTexture(bitmap)
 
         // Compile Shaders
         val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER_CODE)
@@ -95,11 +104,6 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mTexCoordHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate")
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix")
         mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture")
-
-        // Check errors
-        // val linkStatus = IntArray(1)
-        // GLES20.glGetProgramiv(mProgramHandle, GLES20.GL_LINK_STATUS, linkStatus, 0)
-        // if (linkStatus[0] == 0) { ... }
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -157,14 +161,6 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         // Enable blending for transparency
         GLES20.glEnable(GLES20.GL_BLEND)
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE) // Additive blending usually looks good for spectrum
-        // Legacy used: rsgClearColor.
-        // It didn't seem to set blendfunc expressly in script,
-        // but often these visualizations use additive or alpha blend.
-        // ice.png has alpha?
-        // If ice.png is opaque, then GL_ONE, GL_ONE makes it bright.
-        // Let's try standard alpha blending first, but spectrums usually glow (Additive).
-        // Reuse legacy behavior: if not specified, it's typically replace or alpha internal.
-        // Let's assume Alpha Blending.
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
         // Draw Triangle Strip
@@ -190,7 +186,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         }
 
         if (isIdle) {
-            mSpectrumLogic.updateIdle(mPoints, mWidth)
+            mSpectrumLogic.updateIdle(mPoints)
         } else {
             // Always treat width as full lines for logic updates, scaling handles visual fit
             mSpectrumLogic.updateAudio(data!!, mPoints, SpectrumLogic.NUM_LINES, len)
@@ -229,14 +225,46 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mAudioViz = null
     }
 
-    fun updateTexture(resourceId: Int) {
+    fun updateTextureColor(edgeColor: Int, centerColor: Int) {
+        mEdgeColor = edgeColor
+        mCenterColor = centerColor
         if (mTextureId != 0) {
             val textures = IntArray(1)
             textures[0] = mTextureId
             GLES20.glDeleteTextures(1, textures, 0)
         }
-        mCurrentTextureResId = resourceId
-        mTextureId = loadTexture(context, resourceId)
+        val bitmap = generateGradientBitmap(edgeColor, centerColor)
+        mTextureId = loadTexture(bitmap)
+    }
+
+    private fun generateGradientBitmap(edgeColor: Int, centerColor: Int): Bitmap {
+        val width = 64
+        val height = 1
+        val bitmap = createBitmap(width, height)
+
+        val edgeR = Color.red(edgeColor)
+        val edgeG = Color.green(edgeColor)
+        val edgeB = Color.blue(edgeColor)
+
+        val centerR = Color.red(centerColor)
+        val centerG = Color.green(centerColor)
+        val centerB = Color.blue(centerColor)
+
+        for (i in 0 until width) {
+            // Distance from center (0 to 1)
+            // Center is 31.5. Edge 0 is 31.5 away. Edge 63 is 31.5 away.
+            val distanceToCenter = abs(i - 31.5f) / 31.5f
+
+            // Interpolate between Center and Edge
+            // Val = center + (edge - center) * distanceToCenter
+
+            val r = (centerR + (edgeR - centerR) * distanceToCenter).toInt().coerceIn(0, 255)
+            val g = (centerG + (edgeG - centerG) * distanceToCenter).toInt().coerceIn(0, 255)
+            val b = (centerB + (edgeB - centerB) * distanceToCenter).toInt().coerceIn(0, 255)
+
+            bitmap[i, 0] = Color.rgb(r, g, b)
+        }
+        return bitmap
     }
 
     private fun loadShader(type: Int, shaderCode: String): Int {
@@ -246,21 +274,16 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         }
     }
 
-    private fun loadTexture(context: Context, resourceId: Int): Int {
+    private fun loadTexture(bitmap: Bitmap): Int {
         val textureHandle = IntArray(1)
         GLES20.glGenTextures(1, textureHandle, 0)
 
         if (textureHandle[0] != 0) {
-            val options = BitmapFactory.Options()
-            options.inScaled = false
-
-            val bitmap = BitmapFactory.decodeResource(context.resources, resourceId, options)
-
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0])
 
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT) // GL_REPEAT is default? Legacy used WRAP
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT)
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT)
 
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)

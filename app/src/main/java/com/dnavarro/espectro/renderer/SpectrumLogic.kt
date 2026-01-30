@@ -5,6 +5,8 @@ import kotlin.math.sin
 
 class SpectrumLogic {
 
+    var density: Float = 1f // Added density scaling factor
+
     private val mAnalyzer = IntArray(512)
 
     // Waveform state
@@ -24,7 +26,7 @@ class SpectrumLogic {
         const val ARRAY_SIZE = NUM_LINES * VERTICES_PER_LINE * FLOATS_PER_VERTEX
     }
 
-    fun updateIdle(points: FloatArray, width: Int) {
+    fun updateIdle(points: FloatArray) {
         // Based on waveform.rs makeIdleWave and root()
 
         // Show a number of superimposed moving sinewaves
@@ -33,12 +35,15 @@ class SpectrumLogic {
         val amp3 = sin(0.011f * wave3amp) * 40
         val amp4 = sin(0.031f * wave4amp) * 20
 
+        // Use density for minimum thickness
+        val minThickness = 2f * density
+
         // Loop 1024 times
         for (i in 0 until NUM_LINES) {
             var `val` = abs(sin(0.013f * (wave1pos + i)) * amp1 + sin(0.029f * (wave2pos + i)) * amp2)
             val off = sin(0.005f * (wave3pos + i)) * amp3 + sin(0.017f * (wave4pos + i)) * amp4
 
-            if (`val` < 2f && `val` > -2f) `val` = 2f
+            if (`val` < minThickness && `val` > -minThickness) `val` = minThickness
 
             // points structure: [x, y, s, t, x, y, s, t]
             // We update y at index 1 and 5
@@ -109,7 +114,8 @@ class SpectrumLogic {
             val interpolatedVal = v1 + (v2 - v1) * frac
 
             var `val` = interpolatedVal / 8f
-            if (`val` < 1f && `val` > -1f) `val` = 1f
+            val minThickness = 1f * density
+            if (`val` < minThickness && `val` > -minThickness) `val` = minThickness
 
             val pointIdx = (i + skip) * 8
             if (pointIdx + 5 < points.size) {

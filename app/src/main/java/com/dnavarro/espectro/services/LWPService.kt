@@ -1,11 +1,10 @@
 package com.dnavarro.espectro.services
-import android.content.Context
+import android.Manifest
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import com.dnavarro.espectro.renderer.GLES20Renderer
-import android.Manifest
+import android.graphics.Color
 import com.dnavarro.espectro.Constants
-import com.dnavarro.espectro.R
+import com.dnavarro.espectro.renderer.GLES20Renderer
 
 class LWPService : OpenGLES2WallpaperService() {
     override fun onCreateEngine(): Engine {
@@ -20,15 +19,16 @@ class LWPService : OpenGLES2WallpaperService() {
             super.onCreate(surfaceHolder)
 
             // Use applicationContext to share prefs correctly with Activity
-            prefs = applicationContext.getSharedPreferences(Constants.PRENS_NAME, Context.MODE_PRIVATE)
+            prefs = applicationContext.getSharedPreferences(Constants.PRENS_NAME, MODE_PRIVATE)
             prefs.registerOnSharedPreferenceChangeListener(this)
 
             renderer = GLES20Renderer(this@LWPService)
 
             // Set initial texture
             currentTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
-            val resId = if (currentTheme == Constants.THEME_FIRE) R.drawable.fire else R.drawable.ice
-            renderer!!.mCurrentTextureResId = resId
+            val (edgeColor, centerColor) = getColorsForTheme(currentTheme)
+            renderer!!.mEdgeColor = edgeColor
+            renderer!!.mCenterColor = centerColor
 
             setRenderer(renderer!!)
             // Initial check for audio
@@ -59,10 +59,18 @@ class LWPService : OpenGLES2WallpaperService() {
             val newTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
             if (newTheme != currentTheme) {
                 currentTheme = newTheme
-                val resId = if (newTheme == Constants.THEME_FIRE) R.drawable.fire else R.drawable.ice
+                val (edgeColor, centerColor) = getColorsForTheme(newTheme)
                 queueEvent {
-                    renderer?.updateTexture(resId)
+                    renderer?.updateTextureColor(edgeColor, centerColor)
                 }
+            }
+        }
+
+        private fun getColorsForTheme(theme: String): Pair<Int, Int> {
+            return when (theme) {
+                Constants.THEME_FIRE -> Pair(Color.RED, Color.YELLOW)
+                Constants.THEME_ACID -> Pair(Color.GREEN, Color.WHITE)
+                else -> Pair(Color.rgb(3, 3, 255), Color.WHITE) // Ice
             }
         }
 
