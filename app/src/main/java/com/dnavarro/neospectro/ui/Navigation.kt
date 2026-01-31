@@ -5,9 +5,9 @@ import com.dnavarro.neospectro.R
 val mainScreens = listOf(
     NavItem(
         Screen.Main,
-        R.drawable.home_outlined,
-        R.drawable.home_filled,
-        R.string.home
+        R.drawable.palette_outlined,
+        R.drawable.palette_filled,
+        R.string.customization
     ),
     NavItem(
         Screen.Settings,

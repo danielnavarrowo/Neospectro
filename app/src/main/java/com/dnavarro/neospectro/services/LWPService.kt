@@ -1,9 +1,11 @@
 package com.dnavarro.neospectro.services
 import android.Manifest
+import android.app.WallpaperColors
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
 import com.dnavarro.neospectro.Constants
+import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 
 class LWPService : OpenGLES2WallpaperService() {
@@ -17,8 +19,6 @@ class LWPService : OpenGLES2WallpaperService() {
 
         override fun onCreate(surfaceHolder: android.view.SurfaceHolder?) {
             super.onCreate(surfaceHolder)
-
-            // Use applicationContext to share prefs correctly with Activity
             prefs = applicationContext.getSharedPreferences(Constants.PRENS_NAME, MODE_PRIVATE)
             prefs.registerOnSharedPreferenceChangeListener(this)
 
@@ -26,9 +26,10 @@ class LWPService : OpenGLES2WallpaperService() {
 
             // Set initial texture
             currentTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
-            val (edgeColor, centerColor) = getColorsForTheme(currentTheme)
-            renderer!!.mEdgeColor = edgeColor
-            renderer!!.mCenterColor = centerColor
+            val theme = ThemeRepository.getTheme(currentTheme)
+            renderer!!.mEdgeColor = theme.edgeColor
+            renderer!!.mMiddleColor = theme.middleColor
+            renderer!!.mCenterColor = theme.centerColor
 
             setRenderer(renderer!!)
             // Initial check for audio
@@ -46,6 +47,15 @@ class LWPService : OpenGLES2WallpaperService() {
             }
         }
 
+        override fun onComputeColors(): WallpaperColors {
+            val theme = ThemeRepository.getTheme(currentTheme)
+            return WallpaperColors(
+                Color.valueOf(theme.edgeColor),
+                Color.valueOf(theme.middleColor),
+                Color.valueOf(theme.centerColor)
+            )
+        }
+
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
             renderer?.setVisible(visible)
@@ -59,18 +69,11 @@ class LWPService : OpenGLES2WallpaperService() {
             val newTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
             if (newTheme != currentTheme) {
                 currentTheme = newTheme
-                val (edgeColor, centerColor) = getColorsForTheme(newTheme)
+                val theme = ThemeRepository.getTheme(newTheme)
                 queueEvent {
-                    renderer?.updateTextureColor(edgeColor, centerColor)
+                    renderer?.updateTextureColor(theme.edgeColor, theme.middleColor, theme.centerColor)
                 }
-            }
-        }
-
-        private fun getColorsForTheme(theme: String): Pair<Int, Int> {
-            return when (theme) {
-                Constants.THEME_FIRE -> Pair(Color.RED, Color.YELLOW)
-                Constants.THEME_ACID -> Pair(Color.GREEN, Color.WHITE)
-                else -> Pair(Color.rgb(3, 3, 255), Color.WHITE) // Ice
+                notifyColorsChanged()
             }
         }
 

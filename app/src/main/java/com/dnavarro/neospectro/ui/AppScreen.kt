@@ -1,5 +1,8 @@
 package com.dnavarro.neospectro.ui
 
+import android.app.WallpaperManager
+import android.content.ComponentName
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.SharedTransitionLayout
@@ -12,6 +15,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -20,6 +24,7 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ButtonDefaults
@@ -30,6 +35,7 @@ import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.motionScheme
+import androidx.compose.material3.MediumExtendedFloatingActionButton
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,6 +56,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,7 +69,10 @@ import androidx.compose.ui.zIndex
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.dnavarro.neospectro.R
+import com.dnavarro.neospectro.services.LWPService
 import com.dnavarro.neospectro.ui.mainScreen.MainScreen
+import com.dnavarro.neospectro.ui.theme.getGoogleSansFlex
 import com.dnavarro.neospectro.utils.onBack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
@@ -71,7 +81,7 @@ import com.dnavarro.neospectro.utils.onBack
 @Composable
 fun AppScreen(
 ) {
-
+    val context = LocalContext.current
     val backStack = rememberNavBackStack(Screen.Main)
     val motionScheme = motionScheme
     val cutoutInsets = WindowInsets.displayCutout.asPaddingValues()
@@ -84,7 +94,8 @@ fun AppScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Neospectro",
+                        text = stringResource(R.string.neospectro),
+                        style = MaterialTheme.typography.displaySmall,
                         textAlign = TextAlign.Center
                     )
 
@@ -190,9 +201,31 @@ fun AppScreen(
                 }
             }
         },
+        floatingActionButton =
+            {
+                MediumExtendedFloatingActionButton(
+                    onClick = {
+                        val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+                        intent.putExtra(
+                            WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                            ComponentName(context, LWPService::class.java)
+                        )
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.apply_outlined),
+                        contentDescription = "Apply",
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.size(12.dp))
+                    Text(stringResource(R.string.apply),
+                        style = MaterialTheme.typography.titleMedium)
+
+
+                }
+            },
         containerColor = MaterialTheme.colorScheme.primaryContainer,
-
-
     ){
         contentPadding ->
         SharedTransitionLayout {

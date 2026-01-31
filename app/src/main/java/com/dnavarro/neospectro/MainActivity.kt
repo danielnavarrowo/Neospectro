@@ -10,30 +10,12 @@ import com.dnavarro.neospectro.ui.AppScreen
 import com.dnavarro.neospectro.ui.theme.NeospectroTheme
 
 class MainActivity : ComponentActivity() {
-
-    private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                Toast.makeText(this, "Permission Granted!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Permission Denied. Audio visualization won't work.", Toast.LENGTH_LONG).show()
-            }
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // Request Permission
-
-
         setContent {
             NeospectroTheme {
                 AppScreen()
-
-
-
-
             }
         }
     }

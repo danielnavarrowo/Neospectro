@@ -3,4 +3,4 @@
     android:author="@string/author"
     android:description="@string/wallpaper_description"
     android:settingsActivity="com.dnavarro.neospectro.MainActivity"
-    android:thumbnail="@drawable/vis3" />
+    android:thumbnail="@drawable/ice" />

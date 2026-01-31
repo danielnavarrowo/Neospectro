@@ -4,8 +4,8 @@ import android.content.Context
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
-import android.graphics.Bitmap // Added
-import android.graphics.Color  // Added
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.opengl.GLUtils
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -40,6 +40,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
     // Colors
     var mEdgeColor: Int = Color.rgb(3, 3, 255)
+    var mMiddleColor: Int = Color.rgb(0, 128, 255)
     var mCenterColor: Int = Color.WHITE
 
     private var mWidth = 0
@@ -50,10 +51,6 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     private var mAudioEnabled = false
 
     init {
-        // Initialize points X coordinates and Texture S coordinates once
-        // as they don't change (only Y changes)
-        // matches behavior in GenericWaveRS and Visualization3RS
-
         val outlen = SpectrumLogic.NUM_LINES // 1024
         val half = outlen / 2
 
@@ -87,7 +84,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mSpectrumLogic.density = density
 
         // Load Texture from Color
-        val bitmap = generateGradientBitmap(mEdgeColor, mCenterColor)
+        val bitmap = generateGradientBitmap(mEdgeColor, mMiddleColor, mCenterColor)
         mTextureId = loadTexture(bitmap)
 
         // Compile Shaders
@@ -158,10 +155,6 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId)
         GLES20.glUniform1i(mTextureUniformHandle, 0)
 
-        // Enable blending for transparency
-        GLES20.glEnable(GLES20.GL_BLEND)
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE) // Additive blending usually looks good for spectrum
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
         // Draw Triangle Strip
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, mPoints.size / 4)
@@ -225,19 +218,20 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mAudioViz = null
     }
 
-    fun updateTextureColor(edgeColor: Int, centerColor: Int) {
+    fun updateTextureColor(edgeColor: Int, middleColor: Int, centerColor: Int) {
         mEdgeColor = edgeColor
+        mMiddleColor = middleColor
         mCenterColor = centerColor
         if (mTextureId != 0) {
             val textures = IntArray(1)
             textures[0] = mTextureId
             GLES20.glDeleteTextures(1, textures, 0)
         }
-        val bitmap = generateGradientBitmap(edgeColor, centerColor)
+        val bitmap = generateGradientBitmap(edgeColor, middleColor, centerColor)
         mTextureId = loadTexture(bitmap)
     }
 
-    private fun generateGradientBitmap(edgeColor: Int, centerColor: Int): Bitmap {
+    private fun generateGradientBitmap(edgeColor: Int, middleColor: Int, centerColor: Int): Bitmap {
         val width = 64
         val height = 1
         val bitmap = createBitmap(width, height)
@@ -245,6 +239,10 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         val edgeR = Color.red(edgeColor)
         val edgeG = Color.green(edgeColor)
         val edgeB = Color.blue(edgeColor)
+
+        val middleR = Color.red(middleColor)
+        val middleG = Color.green(middleColor)
+        val middleB = Color.blue(middleColor)
 
         val centerR = Color.red(centerColor)
         val centerG = Color.green(centerColor)
@@ -255,14 +253,25 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
             // Center is 31.5. Edge 0 is 31.5 away. Edge 63 is 31.5 away.
             val distanceToCenter = abs(i - 31.5f) / 31.5f
 
-            // Interpolate between Center and Edge
-            // Val = center + (edge - center) * distanceToCenter
+            val r: Int
+            val g: Int
+            val b: Int
 
-            val r = (centerR + (edgeR - centerR) * distanceToCenter).toInt().coerceIn(0, 255)
-            val g = (centerG + (edgeG - centerG) * distanceToCenter).toInt().coerceIn(0, 255)
-            val b = (centerB + (edgeB - centerB) * distanceToCenter).toInt().coerceIn(0, 255)
+            if (distanceToCenter < 0.5f) {
+                // Interpolate between Center and Middle
+                val t = distanceToCenter * 2
+                r = (centerR + (middleR - centerR) * t).toInt()
+                g = (centerG + (middleG - centerG) * t).toInt()
+                b = (centerB + (middleB - centerB) * t).toInt()
+            } else {
+                // Interpolate between Middle and Edge
+                val t = (distanceToCenter - 0.5f) * 2
+                r = (middleR + (edgeR - middleR) * t).toInt()
+                g = (middleG + (edgeG - middleG) * t).toInt()
+                b = (middleB + (edgeB - middleB) * t).toInt()
+            }
 
-            bitmap[i, 0] = Color.rgb(r, g, b)
+            bitmap[i, 0] = Color.rgb(r.coerceIn(0, 255), g.coerceIn(0, 255), b.coerceIn(0, 255))
         }
         return bitmap
     }

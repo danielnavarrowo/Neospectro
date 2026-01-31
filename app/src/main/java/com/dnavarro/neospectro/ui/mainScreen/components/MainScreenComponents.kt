@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,11 +48,14 @@ fun SelectThemeListItem(
         ListItem(
             leadingContent = {
                     Icon(
-                        painter = painterResource(R.drawable.palette),
+                        painter = painterResource(R.drawable.palette_outlined),
                         contentDescription = null,
                     )
             },
-            headlineContent = { Text(stringResource(R.string.select_theme)) },
+            headlineContent = { Text(
+                stringResource(R.string.choose_theme),
+                style = MaterialTheme.typography.titleMedium
+            ) },
         )
         ThemesCarousel(selectedTheme, onThemeSelected)
     }
@@ -72,9 +76,9 @@ fun ThemesCarousel(
 
     val items = remember {
         listOf(
-            CarouselItem(0, R.drawable.vis3, "Ice", Constants.THEME_ICE),
-            CarouselItem(1, R.drawable.vis3, "Acid", Constants.THEME_ACID),
-            CarouselItem(2, R.drawable.vis3, "Fire", Constants.THEME_FIRE),
+            CarouselItem(0, R.drawable.ice, "Ice", Constants.THEME_ICE),
+            CarouselItem(1, R.drawable.acid, "Acid", Constants.THEME_ACID),
+            CarouselItem(2, R.drawable.fire, "Fire", Constants.THEME_FIRE),
         )
     }
 
@@ -86,7 +90,7 @@ fun ThemesCarousel(
     val state = rememberCarouselState(initialItem = initialIndex) { items.count() }
 
     LaunchedEffect(state.currentItem) {
-        delay(1000)
+        delay(2000)
         onThemeSelected(items[state.currentItem].theme)
     }
 
@@ -122,7 +126,7 @@ fun ThemesCarousel(
                 Text(
                     text = item.contentDescription,
                     color = Color.White,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.headlineSmall
                 )
             }
         }

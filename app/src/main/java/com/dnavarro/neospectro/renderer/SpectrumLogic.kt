@@ -27,9 +27,7 @@ class SpectrumLogic {
     }
 
     fun updateIdle(points: FloatArray) {
-        // Based on waveform.rs makeIdleWave and root()
 
-        // Show a number of superimposed moving sinewaves
         val amp1 = sin(0.007f * wave1amp) * 120
         val amp2 = sin(0.023f * wave2amp) * 80
         val amp3 = sin(0.011f * wave3amp) * 40
@@ -60,9 +58,6 @@ class SpectrumLogic {
         wave4pos++
         wave4amp++
 
-        // Handle fadeout if switching?
-        // In RS, root() checks gIdle. If gIdle, it runs fadeout if counter > 0.
-        // We will handle mode switching outside, but here we can have a method to fade.
     }
 
     fun updateAudio(vizData: IntArray, points: FloatArray, width: Int, lenInput: Int) {
@@ -73,7 +68,6 @@ class SpectrumLogic {
 
         if (len == 0) return
 
-        // bins are comprised of 2 values each (real and imaginary part of FFT)
         len /= 2
 
         if (len > mAnalyzer.size) len = mAnalyzer.size

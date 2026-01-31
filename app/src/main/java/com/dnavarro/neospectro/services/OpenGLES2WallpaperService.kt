@@ -56,10 +56,6 @@ abstract class OpenGLES2WallpaperService : WallpaperService() {
             glSurfaceView?.renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
         }
 
-        fun requestRender() {
-            glSurfaceView?.requestRender()
-        }
-
         fun queueEvent(r: Runnable) {
             glSurfaceView?.queueEvent(r)
         }

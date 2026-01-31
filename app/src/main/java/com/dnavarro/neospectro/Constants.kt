@@ -7,4 +7,5 @@ object Constants {
     const val THEME_ICE = "theme_ice"
     const val THEME_FIRE = "theme_fire"
     const val THEME_ACID = "theme_acid"
+
 }

@@ -60,6 +60,15 @@ fun SharedTransitionScope.MainScreen (contentPadding: PaddingValues) {
                     }
                 )
             }
+//            item {
+//                SelectThemeListItem(
+//                    selectedTheme = selectedTheme!!,
+//                    onThemeSelected = { theme ->
+//                        selectedTheme = theme
+//                        prefs.edit { putString(Constants.PREF_THEME, theme) }
+//                    }
+//                )
+//            }
         }
     }
     }
