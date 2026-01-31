@@ -1,5 +1,5 @@
 [versions]
-agp = "9.1.0-alpha06"
+agp = "9.1.0-alpha07"
 coreKtx = "1.17.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.3"

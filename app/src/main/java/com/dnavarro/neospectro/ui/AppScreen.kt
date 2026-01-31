@@ -1,4 +1,4 @@
-package com.dnavarro.espectro.ui
+package com.dnavarro.neospectro.ui
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
@@ -62,8 +62,8 @@ import androidx.compose.ui.zIndex
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import com.dnavarro.espectro.ui.mainScreen.MainScreen
-import com.dnavarro.espectro.utils.onBack
+import com.dnavarro.neospectro.ui.mainScreen.MainScreen
+import com.dnavarro.neospectro.utils.onBack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterial3AdaptiveApi::class
@@ -84,7 +84,7 @@ fun AppScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Espectro",
+                        "Neospectro",
                         textAlign = TextAlign.Center
                     )
 

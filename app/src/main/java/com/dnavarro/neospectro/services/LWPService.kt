@@ -1,16 +1,16 @@
-package com.dnavarro.espectro.services
+package com.dnavarro.neospectro.services
 import android.Manifest
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
-import com.dnavarro.espectro.Constants
-import com.dnavarro.espectro.renderer.GLES20Renderer
+import com.dnavarro.neospectro.Constants
+import com.dnavarro.neospectro.renderer.GLES20Renderer
 
 class LWPService : OpenGLES2WallpaperService() {
     override fun onCreateEngine(): Engine {
-        return EspectroEngine()
+        return NeospectroEngine()
     }
-    inner class EspectroEngine : GLEngine(), SharedPreferences.OnSharedPreferenceChangeListener {
+    inner class NeospectroEngine : GLEngine(), SharedPreferences.OnSharedPreferenceChangeListener {
         private var renderer: GLES20Renderer? = null
         private lateinit var prefs: SharedPreferences
         private var currentTheme: String = Constants.THEME_ICE

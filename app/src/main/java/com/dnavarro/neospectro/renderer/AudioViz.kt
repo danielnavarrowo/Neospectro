@@ -1,4 +1,4 @@
-package com.dnavarro.espectro.renderer
+package com.dnavarro.neospectro.renderer
 
 import android.media.audiofx.Visualizer
 import android.util.Log

@@ -1,4 +1,4 @@
-package com.dnavarro.espectro.ui
+package com.dnavarro.neospectro.ui
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes

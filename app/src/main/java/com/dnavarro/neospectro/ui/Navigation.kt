@@ -1,6 +1,6 @@
-package com.dnavarro.espectro.ui
+package com.dnavarro.neospectro.ui
 
-import com.dnavarro.espectro.R
+import com.dnavarro.neospectro.R
 
 val mainScreens = listOf(
     NavItem(

@@ -1,4 +1,4 @@
-package com.dnavarro.espectro.renderer
+package com.dnavarro.neospectro.renderer
 
 import kotlin.math.abs
 import kotlin.math.sin

@@ -1,8 +1,8 @@
-package com.dnavarro.espectro
+package com.dnavarro.neospectro
 
 object Constants {
 
-    const val PRENS_NAME = "espectro_prefs"
+    const val PRENS_NAME = "neospectro_prefs"
     const val PREF_THEME = "pref_theme"
     const val THEME_ICE = "theme_ice"
     const val THEME_FIRE = "theme_fire"

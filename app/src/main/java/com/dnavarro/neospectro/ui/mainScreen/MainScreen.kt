@@ -1,4 +1,4 @@
-package com.dnavarro.espectro.ui.mainScreen
+package com.dnavarro.neospectro.ui.mainScreen
 
 import android.content.Context
 import androidx.compose.animation.SharedTransitionLayout
@@ -24,9 +24,9 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import com.dnavarro.espectro.Constants
-import com.dnavarro.espectro.ui.mainScreen.components.SelectThemeListItem
-import com.dnavarro.espectro.ui.theme.EspectroTheme
+import com.dnavarro.neospectro.Constants
+import com.dnavarro.neospectro.ui.mainScreen.components.SelectThemeListItem
+import com.dnavarro.neospectro.ui.theme.NeospectroTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -70,7 +70,7 @@ fun SharedTransitionScope.MainScreen (contentPadding: PaddingValues) {
 )
 @Composable
 fun MainScreenPreview() {
-    EspectroTheme() {
+    NeospectroTheme() {
         Surface {
             SharedTransitionLayout {
                 MainScreen(

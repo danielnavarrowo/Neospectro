@@ -1,4 +1,4 @@
-package com.dnavarro.espectro.services
+package com.dnavarro.neospectro.services
 
 import android.content.Context
 import android.opengl.GLSurfaceView

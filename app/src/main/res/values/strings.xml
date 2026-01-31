@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Espectro Live Wallpaper</string>
+    <string name="app_name">Neospectro Live Wallpaper</string>
     <string name="wallpaper_description">Shows the frequency spectrum of any currently playing music track.</string>
     <string name="author">Google (Port by Daniel Navarro)</string>
     <string name="home">Home</string>

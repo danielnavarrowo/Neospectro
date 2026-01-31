@@ -1,11 +1,10 @@
-package com.dnavarro.espectro.ui.mainScreen.components
+package com.dnavarro.neospectro.ui.mainScreen.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,9 +29,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.dnavarro.espectro.Constants
-import com.dnavarro.espectro.R
-import com.dnavarro.espectro.ui.theme.EspectroShapeDefaults.topListItemShape
+import com.dnavarro.neospectro.Constants
+import com.dnavarro.neospectro.R
+import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 import kotlinx.coroutines.delay
 
 @Composable
@@ -43,7 +42,7 @@ fun SelectThemeListItem(
 ) {
     Column(
         modifier
-            .clip(topListItemShape).background(MaterialTheme.colorScheme.surfaceVariant),
+            .clip(topListItemShape),
     ) {
         ListItem(
             leadingContent = {

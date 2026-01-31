@@ -1,4 +1,4 @@
-package com.dnavarro.espectro.ui.theme
+package com.dnavarro.neospectro.ui.theme
 
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -6,7 +6,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.runtime.Composable
 
-object EspectroShapeDefaults {
+object NeospectroShapeDefaults {
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     val topListItemShape: RoundedCornerShape
         @Composable get() =
