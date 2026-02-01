@@ -16,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalCenteredHeroCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
@@ -32,6 +33,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.R
+import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
+import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
+import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.middleListItemShape
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 import kotlinx.coroutines.delay
 
@@ -43,7 +47,7 @@ fun SelectThemeListItem(
 ) {
     Column(
         modifier
-            .clip(topListItemShape),
+            .clip(cardShape),
     ) {
         ListItem(
             leadingContent = {
@@ -56,6 +60,7 @@ fun SelectThemeListItem(
                 stringResource(R.string.choose_theme),
                 style = MaterialTheme.typography.titleMedium
             ) },
+            colors = listItemColors,
         )
         ThemesCarousel(selectedTheme, onThemeSelected)
     }
@@ -65,11 +70,12 @@ fun SelectThemeListItem(
 @Composable
 fun ThemesCarousel(
     selectedTheme: String,
-    onThemeSelected: (String) -> Unit = {}
+    onThemeSelected: (String) -> Unit = {},
+
 ) {
     data class CarouselItem(
         val id: Int,
-        @DrawableRes val imageResId: Int,
+        @param:DrawableRes val imageResId: Int,
         val contentDescription: String,
         val theme: String
     )
@@ -79,6 +85,10 @@ fun ThemesCarousel(
             CarouselItem(0, R.drawable.ice, "Ice", Constants.THEME_ICE),
             CarouselItem(1, R.drawable.acid, "Acid", Constants.THEME_ACID),
             CarouselItem(2, R.drawable.fire, "Fire", Constants.THEME_FIRE),
+            CarouselItem(3, R.drawable.pink, "Pink", Constants.THEME_PINK),
+            CarouselItem(4, R.drawable.cyan, "Cyan", Constants.THEME_CYAN),
+            CarouselItem(5, R.drawable.yellow, "Yellow", Constants.THEME_YELLOW),
+            CarouselItem(6, R.drawable.purple, "Purple", Constants.THEME_PURPLE),
         )
     }
 
@@ -90,16 +100,17 @@ fun ThemesCarousel(
     val state = rememberCarouselState(initialItem = initialIndex) { items.count() }
 
     LaunchedEffect(state.currentItem) {
-        delay(2000)
+        delay(1000)
         onThemeSelected(items[state.currentItem].theme)
     }
 
     HorizontalCenteredHeroCarousel(
         state = state,
         modifier = Modifier
+            .background(colorScheme.surfaceBright)
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(top = 16.dp, bottom = 16.dp),
+            .padding(16.dp),
         itemSpacing = 8.dp,
     ) { i ->
         val item = items[i]

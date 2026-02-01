@@ -10,7 +10,7 @@ sealed class Screen : NavKey {
     object Main : Screen()
 
     @Serializable
-    object Settings : Screen()
+    object Info : Screen()
 
 }
 

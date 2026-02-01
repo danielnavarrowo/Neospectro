@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -43,6 +44,7 @@ fun SharedTransitionScope.MainScreen (contentPadding: PaddingValues) {
     Scaffold(
         topBar = { Spacer(Modifier.height(contentPadding.calculateTopPadding())) },
         bottomBar = { Spacer(Modifier.height(contentPadding.calculateBottomPadding())) },
+        containerColor = MaterialTheme.colorScheme.surfaceDim,
 
     ) {
         innerPadding ->

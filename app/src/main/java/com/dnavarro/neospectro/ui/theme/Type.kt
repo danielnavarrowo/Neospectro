@@ -15,7 +15,7 @@ val googleFlexDisplay = FontFamily(
     Font(
         R.font.googlesansflex,
         variationSettings = FontVariation.Settings(
-            FontVariation.weight(100),
+            FontVariation.weight(300),
             FontVariation.width(140f),
             FontVariation.slant(-7f),
             FontVariation.grade(100),

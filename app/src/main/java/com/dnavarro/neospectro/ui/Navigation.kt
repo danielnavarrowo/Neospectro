@@ -10,9 +10,9 @@ val mainScreens = listOf(
         R.string.customization
     ),
     NavItem(
-        Screen.Settings,
-        R.drawable.settings_outlined,
-        R.drawable.settings_filled,
-        R.string.settings
+        Screen.Info,
+        R.drawable.info_outlined,
+        R.drawable.info_filled,
+        R.string.info
     ),
 )
