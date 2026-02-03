@@ -4,6 +4,8 @@ object Constants {
 
     const val PRENS_NAME = "neospectro_prefs"
     const val PREF_THEME = "pref_theme"
+    const val PREF_REVERSE_COLORS = "pref_reverse_colors"
+    const val PREF_AUDIO_VIZ = "pref_audio_viz"
     const val THEME_ICE = "theme_ice"
     const val THEME_FIRE = "theme_fire"
     const val THEME_ACID = "theme_acid"

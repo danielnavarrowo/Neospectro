@@ -16,6 +16,7 @@ class LWPService : OpenGLES2WallpaperService() {
         private var renderer: GLES20Renderer? = null
         private lateinit var prefs: SharedPreferences
         private var currentTheme: String = Constants.THEME_ICE
+        private var reverseColors: Boolean = false
 
         override fun onCreate(surfaceHolder: android.view.SurfaceHolder?) {
             super.onCreate(surfaceHolder)
@@ -26,10 +27,15 @@ class LWPService : OpenGLES2WallpaperService() {
 
             // Set initial texture
             currentTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
+            reverseColors = prefs.getBoolean(Constants.PREF_REVERSE_COLORS, false)
             val theme = ThemeRepository.getTheme(currentTheme)
-            renderer!!.mEdgeColor = theme.edgeColor
+
+            val edge = if (reverseColors) theme.centerColor else theme.edgeColor
+            val center = if (reverseColors) theme.edgeColor else theme.centerColor
+
+            renderer!!.mEdgeColor = edge
             renderer!!.mMiddleColor = theme.middleColor
-            renderer!!.mCenterColor = theme.centerColor
+            renderer!!.mCenterColor = center
 
             setRenderer(renderer!!)
             // Initial check for audio
@@ -42,17 +48,21 @@ class LWPService : OpenGLES2WallpaperService() {
         }
 
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-            if (key == Constants.PREF_THEME) {
+            if (key == Constants.PREF_THEME || key == Constants.PREF_REVERSE_COLORS) {
                 checkAndUpdateTheme()
+            } else if (key == Constants.PREF_AUDIO_VIZ) {
+                checkAudioPermission()
             }
         }
 
         override fun onComputeColors(): WallpaperColors {
             val theme = ThemeRepository.getTheme(currentTheme)
+            val edge = if (reverseColors) theme.centerColor else theme.edgeColor
+            val center = if (reverseColors) theme.edgeColor else theme.centerColor
             return WallpaperColors(
-                Color.valueOf(theme.edgeColor),
+                Color.valueOf(edge),
                 Color.valueOf(theme.middleColor),
-                Color.valueOf(theme.centerColor)
+                Color.valueOf(center)
             )
         }
 
@@ -67,11 +77,18 @@ class LWPService : OpenGLES2WallpaperService() {
 
         private fun checkAndUpdateTheme() {
             val newTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
-            if (newTheme != currentTheme) {
+            val newReverse = prefs.getBoolean(Constants.PREF_REVERSE_COLORS, false)
+
+            if (newTheme != currentTheme || newReverse != reverseColors) {
                 currentTheme = newTheme
+                reverseColors = newReverse
                 val theme = ThemeRepository.getTheme(newTheme)
+
+                val edge = if (reverseColors) theme.centerColor else theme.edgeColor
+                val center = if (reverseColors) theme.edgeColor else theme.centerColor
+
                 queueEvent {
-                    renderer?.updateTextureColor(theme.edgeColor, theme.middleColor, theme.centerColor)
+                    renderer?.updateTextureColor(edge, theme.middleColor, center)
                 }
                 notifyColorsChanged()
             }
@@ -79,7 +96,9 @@ class LWPService : OpenGLES2WallpaperService() {
 
         private fun checkAudioPermission() {
              var hasPermission = false
-             if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+             val isEnabledInSettings = prefs.getBoolean(Constants.PREF_AUDIO_VIZ, false)
+
+             if (isEnabledInSettings && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                  hasPermission = true
              }
              renderer?.setAudioEnabled(hasPermission)

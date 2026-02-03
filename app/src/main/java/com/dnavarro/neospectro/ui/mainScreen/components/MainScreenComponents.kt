@@ -35,8 +35,6 @@ import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
-import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.middleListItemShape
-import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 import kotlinx.coroutines.delay
 
 @Composable
@@ -61,6 +59,7 @@ fun SelectThemeListItem(
                 style = MaterialTheme.typography.titleMedium
             ) },
             colors = listItemColors,
+            supportingContent = { Text(stringResource(R.string.choose_theme_desc)) },
         )
         ThemesCarousel(selectedTheme, onThemeSelected)
     }
@@ -116,7 +115,7 @@ fun ThemesCarousel(
         val item = items[i]
         Box(
             modifier = Modifier
-                .height(256.dp)
+                .height(192.dp)
                 .fillMaxWidth()
                 .maskClip(MaterialTheme.shapes.extraLarge)
         ) {

@@ -33,9 +33,11 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.MediumExtendedFloatingActionButton
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -78,6 +80,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.services.LWPService
 import com.dnavarro.neospectro.ui.mainScreen.MainScreen
+import com.dnavarro.neospectro.ui.theme.CustomColors.topBarColors
 import com.dnavarro.neospectro.utils.onBack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
@@ -117,17 +120,16 @@ fun AppScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.neospectro),
+                        text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.displaySmall,
                         textAlign = TextAlign.Center
                     )
-
-
                 },
                 subtitle = {},
                 titleHorizontalAlignment = CenterHorizontally,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceDim)
+
 
             )
         },
