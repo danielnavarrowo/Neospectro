@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Neospectro</string>
     <string name="wallpaper_description">Get lost on the dancing waves.</string>
-    <string name="author">Google (Port by Daniel Navarro)</string>
+    <string name="author">Daniel Navarro</string>
     <string name="customization">Customization</string>
     <string name="info">Info</string>
     <string name="choose_theme">Choose your theme</string>
@@ -10,6 +10,5 @@
     <string name="enable_audio_visualization_desc">The waves will dance according to the rhythm of the music. Requires microphone access permissions.</string>
     <string name="reverse_color_order_desc">Reverses the order of the color palette for the selected theme.</string>
     <string name="reverse_color_order">Reverse the color order</string>
-
     <string name="apply">Apply</string>
 </resources>

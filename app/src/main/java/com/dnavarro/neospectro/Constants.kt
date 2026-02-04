@@ -13,6 +13,7 @@ object Constants {
     const val THEME_CYAN = "theme_cyan"
     const val THEME_YELLOW = "theme_yellow"
     const val THEME_PURPLE = "theme_purple"
+   // const val THEME_CUSTOM = "theme_custom"
 
 
 }

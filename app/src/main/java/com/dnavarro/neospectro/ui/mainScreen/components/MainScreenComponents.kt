@@ -88,6 +88,7 @@ fun ThemesCarousel(
             CarouselItem(4, R.drawable.cyan, "Cyan", Constants.THEME_CYAN),
             CarouselItem(5, R.drawable.yellow, "Yellow", Constants.THEME_YELLOW),
             CarouselItem(6, R.drawable.purple, "Purple", Constants.THEME_PURPLE),
+            //CarouselItem(7, R.drawable.purple, "Custom", Constants.THEME_CUSTOM),
         )
     }
 
