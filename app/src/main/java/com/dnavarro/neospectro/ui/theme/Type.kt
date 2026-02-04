@@ -73,25 +73,6 @@ val googleFlexLabel = FontFamily(
     )
 )
 
-// Helper function para crear variaciones específicas en componentes
-@OptIn(ExperimentalTextApi::class)
-fun getGoogleSansFlex(
-    weight: Int = 400,
-    width: Float = 100f,
-    slant: Float = 0f,
-    grade: Int = 0
-): FontFamily = FontFamily(
-    Font(
-        R.font.googlesansflex,
-        variationSettings = FontVariation.Settings(
-            FontVariation.weight(weight),
-            FontVariation.width(width),
-            FontVariation.slant(slant),
-            FontVariation.grade(grade)
-        )
-    )
-)
-
 val AppTypography = Typography(
     displayLarge = TYPOGRAPHY.displayLarge.copy(
         fontFamily = googleFlexDisplay,

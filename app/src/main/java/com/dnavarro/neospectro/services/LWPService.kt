@@ -4,6 +4,7 @@ import android.app.WallpaperColors
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.util.Log
 import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
@@ -44,6 +45,7 @@ class LWPService : OpenGLES2WallpaperService() {
 
         override fun onDestroy() {
             super.onDestroy()
+            Log.d("destroyed", "Destroyed")
             prefs.unregisterOnSharedPreferenceChangeListener(this)
         }
 
@@ -68,6 +70,7 @@ class LWPService : OpenGLES2WallpaperService() {
 
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
+            Log.d("VisibilityChanged", "Visibility changed to $visible")
             renderer?.setVisible(visible)
             if (visible) {
                  checkAudioPermission()

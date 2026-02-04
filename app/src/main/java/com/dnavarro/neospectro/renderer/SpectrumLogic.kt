@@ -60,6 +60,17 @@ class SpectrumLogic {
 
     }
 
+    fun reset() {
+        wave1pos = 0
+        wave1amp = 0
+        wave2pos = 0
+        wave2amp = 0
+        wave3pos = 0
+        wave3amp = 0
+        wave4pos = 0
+        wave4amp = 0
+    }
+
     fun updateAudio(vizData: IntArray, points: FloatArray, width: Int, lenInput: Int) {
         var len = lenInput
         // The really high frequencies aren't that interesting for music,

@@ -21,7 +21,6 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     private val mSpectrumLogic = SpectrumLogic()
     private var mAudioViz: AudioViz? = null
 
-    // Vertex Buffer: 1024 lines * 2 vertices * 4 floats (x,y,s,t)
     private val mPoints = FloatArray(SpectrumLogic.ARRAY_SIZE)
     private var mVertexBuffer: FloatBuffer
 
@@ -49,6 +48,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     // State
     private var mVisible = false
     private var mAudioEnabled = false
+    private var mLastIsIdle = true
 
     init {
         val outlen = SpectrumLogic.NUM_LINES // 1024
@@ -108,9 +108,6 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mHeight = height
         GLES20.glViewport(0, 0, width, height)
 
-        // Setup Orthographic Projection centered at 0,0
-        // Width covers -width/2 to width/2
-        // Height covers -height/2 to height/2
         val halfW = width / 2f
         val halfH = height / 2f
 
@@ -178,6 +175,11 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
              isIdle = false
         }
 
+        if (isIdle && !mLastIsIdle) {
+            mSpectrumLogic.reset()
+        }
+        mLastIsIdle = isIdle
+
         if (isIdle) {
             mSpectrumLogic.updateIdle(mPoints)
         } else {
@@ -189,6 +191,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     fun setVisible(visible: Boolean) {
         mVisible = visible
         if (visible) {
+            mSpectrumLogic.reset()
             if (mAudioEnabled) startAudio()
         } else {
             stopAudio()
@@ -304,7 +307,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     companion object {
-        // Simple pass-through position and texture coords
+
         private const val VERTEX_SHADER_CODE = """
             uniform mat4 u_MVPMatrix;
             attribute vec4 a_Position;

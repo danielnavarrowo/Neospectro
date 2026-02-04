@@ -16,7 +16,7 @@ class AudioViz(private val type: Int, size: Int) {
     companion object {
         const val TYPE_PCM = 0
         const val TYPE_FFT = 1
-        private const val MAX_IDLE_TIME_MS = 1000L
+        private const val MAX_IDLE_TIME_MS = 1500L
         private const val TAG = "AudioViz"
     }
 
