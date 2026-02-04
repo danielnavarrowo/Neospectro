@@ -11,4 +11,8 @@
     <string name="reverse_color_order_desc">Reverses the order of the color palette for the selected theme.</string>
     <string name="reverse_color_order">Reverse the color order</string>
     <string name="apply">Apply</string>
+
+    <string name="original_code_title">Original Code</string>
+    <string name="original_code_desc">Based on Music Visualization Wallpapers by The Android Open Source Project</string>
+    <string name="license">Apache License 2.0</string>
 </resources>

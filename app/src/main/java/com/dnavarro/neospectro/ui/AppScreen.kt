@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -77,6 +76,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.services.LWPService
+import com.dnavarro.neospectro.ui.infoScreen.InfoScreen
 import com.dnavarro.neospectro.ui.mainScreen.MainScreen
 import com.dnavarro.neospectro.utils.onBack
 
@@ -119,7 +119,8 @@ fun AppScreen(
                     Text(
                         text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.displaySmall,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 24.dp)
                     )
                 },
                 subtitle = {},
@@ -253,7 +254,6 @@ fun AppScreen(
 
     ){
         contentPadding ->
-        SharedTransitionLayout {
             NavDisplay(
                 backStack = backStack,
                 onBack = backStack::onBack,
@@ -277,11 +277,12 @@ fun AppScreen(
                     }
 
                     entry <Screen.Info> {
-
+                        InfoScreen(
+                            contentPadding = contentPadding
+                        )
                     }
                 }
             )
-        }
     }
 
 

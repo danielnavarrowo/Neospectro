@@ -92,9 +92,6 @@ fun MainScreen (contentPadding: PaddingValues) {
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)) {
             item {
-                Spacer(
-                    modifier = Modifier.height(8.dp)
-                )
                 SelectThemeListItem(
                     selectedTheme = selectedTheme!!,
                     onThemeSelected = { theme ->
@@ -211,6 +208,9 @@ fun MainScreen (contentPadding: PaddingValues) {
                     colors = listItemColors,
                     modifier = Modifier.clip(bottomListItemShape)
                 )
+            }
+            item {
+                Spacer(Modifier.height(128.dp))
             }
         }
     }
