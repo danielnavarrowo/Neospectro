@@ -1,6 +1,6 @@
 # Neospectro
 
-![Banner](https://raw.githubusercontent.com/danielnavarrowo/ProductosNavHer/refs/heads/master/app/images/banner.webp)
+![Banner](https://raw.githubusercontent.com/danielnavarrowo/Neospectro/refs/heads/main/banner.webp)
 
 A modern rewrite of Music Visualization Wallpapers, the wavy Live Wallpaper created by the AOSP team back in the day.
 With new functions, more vibrant themes and a Material 3 Expressive user interface.
@@ -16,13 +16,11 @@ With new functions, more vibrant themes and a Material 3 Expressive user interfa
 - [OpenGL](https://www.opengl.org/)
 
 ## Special thanks to
-- Android Open Source Project -
-  [Google Source](https://android.googlesource.com/platform/packages/wallpapers/MusicVisualization)
-The original creators of the Live Wallpaper.
+- Android Open Source Project: The original creators of the Live Wallpaper. [Google Source](https://android.googlesource.com/platform/packages/wallpapers/MusicVisualization)
 
-- The Tomato app, by Nishant Mishra -
-  [GitHub](https://github.com/nsh07/Tomato)
-Which heavily inspired the UI design of this app.
+
+
+- The Tomato app, by Nishant Mishra: Which heavily inspired the UI design of this app. [GitHub](https://github.com/nsh07/Tomato)
 
 
 ## Developed by
