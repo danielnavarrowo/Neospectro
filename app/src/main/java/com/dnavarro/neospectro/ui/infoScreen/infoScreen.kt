@@ -35,7 +35,6 @@ import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.bottomListItemShape
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
-import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.middleListItemShape
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
