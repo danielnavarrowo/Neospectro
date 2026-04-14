@@ -37,6 +37,23 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     private var mTextureUniformHandle = 0
     private var mTextureId = 0
 
+    // Background Handles
+    private var mBgProgramHandle = 0
+    private var mBgPositionHandle = 0
+    private var mBgTexCoordHandle = 0
+    private var mBgTextureUniformHandle = 0
+    private var mBgTextureId = 0
+    private val mBgPoints = floatArrayOf(
+        -1f, -1f, 0f, 1f,
+        1f, -1f, 1f, 1f,
+        -1f,  1f, 0f, 0f,
+        1f,  1f, 1f, 0f
+    )
+    private val mBgVertexBuffer: FloatBuffer = ByteBuffer.allocateDirect(mBgPoints.size * 4)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer()
+        .apply { put(mBgPoints).position(0) }
+
     // Colors
     var mEdgeColor: Int = Color.rgb(3, 3, 255)
     var mMiddleColor: Int = Color.rgb(0, 128, 255)
@@ -101,6 +118,19 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mTexCoordHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate")
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_MVPMatrix")
         mTextureUniformHandle = GLES20.glGetUniformLocation(mProgramHandle, "u_Texture")
+
+        // Compile Background Shaders
+        val bgVertexShader = loadShader(GLES20.GL_VERTEX_SHADER, BG_VERTEX_SHADER_CODE)
+        val bgFragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, BG_FRAGMENT_SHADER_CODE)
+        
+        mBgProgramHandle = GLES20.glCreateProgram().also {
+            GLES20.glAttachShader(it, bgVertexShader)
+            GLES20.glAttachShader(it, bgFragmentShader)
+            GLES20.glLinkProgram(it)
+        }
+        mBgPositionHandle = GLES20.glGetAttribLocation(mBgProgramHandle, "a_Position")
+        mBgTexCoordHandle = GLES20.glGetAttribLocation(mBgProgramHandle, "a_TexCoordinate")
+        mBgTextureUniformHandle = GLES20.glGetUniformLocation(mBgProgramHandle, "u_Texture")
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -135,7 +165,31 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mVertexBuffer.put(mPoints)
         mVertexBuffer.position(0)
 
-        // Draw
+        // Draw Background
+        if (mBgTextureId != 0) {
+            GLES20.glUseProgram(mBgProgramHandle)
+
+            mBgVertexBuffer.position(0)
+            GLES20.glVertexAttribPointer(mBgPositionHandle, 2, GLES20.GL_FLOAT, false, 4 * 4, mBgVertexBuffer)
+            GLES20.glEnableVertexAttribArray(mBgPositionHandle)
+
+            // Texture Coords start at offset 2 floats (8 bytes)
+            mBgVertexBuffer.position(2)
+            GLES20.glVertexAttribPointer(mBgTexCoordHandle, 2, GLES20.GL_FLOAT, false, 4 * 4, mBgVertexBuffer)
+            GLES20.glEnableVertexAttribArray(mBgTexCoordHandle)
+
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE1)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mBgTextureId)
+            GLES20.glUniform1i(mBgTextureUniformHandle, 1)
+
+            // Draw Background Quad
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+
+            GLES20.glDisableVertexAttribArray(mBgPositionHandle)
+            GLES20.glDisableVertexAttribArray(mBgTexCoordHandle)
+        }
+
+        // Draw Foreground Wave
         GLES20.glUseProgram(mProgramHandle)
 
         GLES20.glVertexAttribPointer(mPositionHandle, 2, GLES20.GL_FLOAT, false, 4 * 4, mVertexBuffer)
@@ -234,6 +288,18 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         mTextureId = loadTexture(bitmap)
     }
 
+    fun setBackgroundImage(bitmap: Bitmap?) {
+        if (mBgTextureId != 0) {
+            val textures = IntArray(1)
+            textures[0] = mBgTextureId
+            GLES20.glDeleteTextures(1, textures, 0)
+            mBgTextureId = 0
+        }
+        if (bitmap != null) {
+            mBgTextureId = loadTexture(bitmap)
+        }
+    }
+
     private fun generateGradientBitmap(edgeColor: Int, middleColor: Int, centerColor: Int): Bitmap {
         val width = 64
         val height = 1
@@ -322,6 +388,27 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Simple texture sampling
         private const val FRAGMENT_SHADER_CODE = """
+            precision mediump float;
+            uniform sampler2D u_Texture;
+            varying vec2 v_TexCoordinate;
+            
+            void main() {
+                gl_FragColor = texture2D(u_Texture, v_TexCoordinate);
+            }
+        """
+
+        private const val BG_VERTEX_SHADER_CODE = """
+            attribute vec4 a_Position;
+            attribute vec2 a_TexCoordinate;
+            varying vec2 v_TexCoordinate;
+            
+            void main() {
+                v_TexCoordinate = a_TexCoordinate;
+                gl_Position = a_Position;
+            }
+        """
+
+        private const val BG_FRAGMENT_SHADER_CODE = """
             precision mediump float;
             uniform sampler2D u_Texture;
             varying vec2 v_TexCoordinate;

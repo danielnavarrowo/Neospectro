@@ -3,10 +3,12 @@ import android.Manifest
 import android.app.WallpaperColors
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
+import java.io.File
 
 class LWPService : OpenGLES2WallpaperService() {
     override fun onCreateEngine(): Engine {
@@ -40,6 +42,7 @@ class LWPService : OpenGLES2WallpaperService() {
             setRenderer(renderer!!)
             // Initial check for audio
             checkAudioPermission()
+            checkAndUpdateBgImage()
         }
 
         override fun onDestroy() {
@@ -52,6 +55,8 @@ class LWPService : OpenGLES2WallpaperService() {
                 checkAndUpdateTheme()
             } else if (key == Constants.PREF_AUDIO_VIZ) {
                 checkAudioPermission()
+            } else if (key == Constants.PREF_HAS_BG_IMAGE) {
+                checkAndUpdateBgImage()
             }
         }
 
@@ -72,6 +77,28 @@ class LWPService : OpenGLES2WallpaperService() {
             if (visible) {
                  checkAudioPermission()
                  checkAndUpdateTheme()
+                 checkAndUpdateBgImage()
+            }
+        }
+
+        private fun checkAndUpdateBgImage() {
+            val hasBg = prefs.getBoolean(Constants.PREF_HAS_BG_IMAGE, false)
+            if (hasBg) {
+                val file = File(applicationContext.filesDir, "bg_image.jpg")
+                if (file.exists()) {
+                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                    queueEvent {
+                        renderer?.setBackgroundImage(bitmap)
+                    }
+                } else {
+                    queueEvent {
+                        renderer?.setBackgroundImage(null)
+                    }
+                }
+            } else {
+                queueEvent {
+                    renderer?.setBackgroundImage(null)
+                }
             }
         }
 

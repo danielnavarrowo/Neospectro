@@ -14,6 +14,6 @@ object Constants {
     const val THEME_YELLOW = "theme_yellow"
     const val THEME_PURPLE = "theme_purple"
    // const val THEME_CUSTOM = "theme_custom"
-
+    const val PREF_HAS_BG_IMAGE = "pref_has_bg_image"
 
 }
