@@ -51,12 +51,16 @@ class LWPService : OpenGLES2WallpaperService() {
         }
 
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-            if (key == Constants.PREF_THEME || key == Constants.PREF_REVERSE_COLORS) {
-                checkAndUpdateTheme()
-            } else if (key == Constants.PREF_AUDIO_VIZ) {
-                checkAudioPermission()
-            } else if (key == Constants.PREF_HAS_BG_IMAGE) {
-                checkAndUpdateBgImage()
+            when (key) {
+                Constants.PREF_THEME, Constants.PREF_REVERSE_COLORS -> {
+                    checkAndUpdateTheme()
+                }
+                Constants.PREF_AUDIO_VIZ -> {
+                    checkAudioPermission()
+                }
+                Constants.PREF_HAS_BG_IMAGE -> {
+                    checkAndUpdateBgImage()
+                }
             }
         }
 
