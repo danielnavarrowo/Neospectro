@@ -15,9 +15,9 @@ val googleFlexDisplay = FontFamily(
     Font(
         R.font.googlesansflex,
         variationSettings = FontVariation.Settings(
-            FontVariation.weight(300),
-            FontVariation.width(140f),
-            FontVariation.slant(-7f),
+            FontVariation.weight(50),
+            FontVariation.width(150f),
+            FontVariation.slant(-10f),
             FontVariation.grade(100),
         )
     )
@@ -28,9 +28,9 @@ val googleFlexHeadline = FontFamily(
     Font(
         R.font.googlesansflex,
         variationSettings = FontVariation.Settings(
-            FontVariation.weight(200),
-            FontVariation.width(120f),
-            FontVariation.slant(-5f),
+            FontVariation.weight(800),
+            FontVariation.width(130f),
+            FontVariation.slant(0f),
             FontVariation.grade(50),
         )
     )
