@@ -81,7 +81,10 @@ fun MainScreen (
     val bgImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        viewModel.handleBgImagePicked(uri, context)
+        if (uri != null) {
+            viewModel.handleBgImagePicked(uri, context)
+            showBgSheet = false
+        }
     }
 
     val launcher = rememberLauncherForActivityResult(
