@@ -2,6 +2,8 @@ package com.dnavarro.neospectro.renderer
 
 import kotlin.math.abs
 import kotlin.math.sin
+import kotlin.math.pow
+import kotlin.math.hypot
 
 class SpectrumLogic {
 
@@ -87,17 +89,28 @@ class SpectrumLogic {
         for (i in 1 until len - 1) {
             val val1 = vizData[i * 2]
             val val2 = vizData[i * 2 + 1]
-            val magnitude = val1 * val1 + val2 * val2
-            // Linear scaling by frequency (i)
-            // Use Int to avoid overflow
-            var newval = magnitude * (i / 16 + 1)
+
+            // Use amplitude (hypotenuse) instead of squared magnitude to prevent massive bass spikes
+            val amplitude = hypot(val1.toDouble(), val2.toDouble()).toFloat()
+
+            // Add progressive weight to boost high frequencies, balancing the bass-heavy nature of music
+            val weight = 1.0f + (i.toFloat() / len) * 4.0f
+
+            val targetVal = (amplitude * weight * 35f).toInt()
             val oldval = mAnalyzer[i]
-            if (newval >= oldval - 800) {
-                // use new high value
+
+            // Attack & Decay smoothing
+            val attack = 0.4f
+            val decay = 0.1f
+
+            var newval = if (targetVal > oldval) {
+                (oldval * (1 - attack) + targetVal * attack).toInt()
             } else {
-                newval = oldval - 800
-                if (newval < 0) newval = 0
+                (oldval * (1 - decay) + targetVal * decay).toInt()
             }
+
+            if (newval < 0) newval = 0
+
             mAnalyzer[i] = newval
         }
 
@@ -106,21 +119,37 @@ class SpectrumLogic {
         val spreadWidth = if (width > outlen) outlen else width
         val skip = (outlen - spreadWidth) / 2
 
-        for (i in 0 until spreadWidth) {
-            // Linear Interpolation
-            val exactIndex = i.toFloat() * (len - 1) / spreadWidth.toFloat()
-            val idx = exactIndex.toInt()
-            val frac = exactIndex - idx
+        val numBars = 64
+        val barWidth = spreadWidth / numBars
 
-            // Safety check
-            val v1 = if (idx < len) mAnalyzer[idx] else 0
-            val v2 = if (idx + 1 < len) mAnalyzer[idx + 1] else v1
+        val minIdx = 1.0
+        val maxIdx = (len - 2).coerceAtLeast(1).toDouble()
+        val ratio = maxIdx / minIdx
+
+        for (i in 0 until spreadWidth) {
+            val barIndex = i / barWidth
+
+            val pow = barIndex.toDouble() / (numBars - 1).coerceAtLeast(1).toDouble()
+            val exactIdx = minIdx * ratio.pow(pow)
+
+            val idx = exactIdx.toInt().coerceIn(1, len - 2)
+            val frac = (exactIdx - idx).toFloat()
+
+            val v1 = mAnalyzer[idx]
+            val nextIdx = (idx + 1).coerceAtMost(len - 2)
+            val v2 = mAnalyzer[nextIdx]
 
             val interpolatedVal = v1 + (v2 - v1) * frac
 
             var `val` = interpolatedVal / 8f
             val minThickness = 1f * density
-            if (`val` < minThickness && `val` > -minThickness) `val` = minThickness
+
+            val posInBar = i % barWidth
+            if (posInBar == 0 || posInBar == barWidth - 1) {
+                `val` = minThickness
+            } else {
+                if (`val` < minThickness && `val` > -minThickness) `val` = minThickness
+            }
 
             val pointIdx = (i + skip) * 8
             if (pointIdx + 5 < points.size) {
