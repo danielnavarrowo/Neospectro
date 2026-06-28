@@ -4,6 +4,7 @@
     <string name="author">Daniel Navarro</string>
     <string name="customization">Customization</string>
     <string name="info">Info</string>
+    <string name="zen">Zen</string>
     <string name="choose_theme">Choose your theme</string>
     <string name="choose_theme_desc">The selected theme will be set automatically. No need to reapply!</string>
     <string name="enable_audio_visualization">Enable audio visualization</string>

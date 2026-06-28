@@ -36,6 +36,7 @@ import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun SelectThemeListItem(
@@ -100,7 +101,7 @@ fun ThemesCarousel(
     val state = rememberCarouselState(initialItem = initialIndex) { items.count() }
 
     LaunchedEffect(state.currentItem) {
-        delay(1000)
+        delay(1000.milliseconds)
         onThemeSelected(items[state.currentItem].theme)
     }
 

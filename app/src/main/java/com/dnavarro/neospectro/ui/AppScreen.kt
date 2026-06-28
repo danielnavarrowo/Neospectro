@@ -78,6 +78,7 @@ import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.services.LWPService
 import com.dnavarro.neospectro.ui.infoScreen.InfoScreen
 import com.dnavarro.neospectro.ui.mainScreen.MainScreen
+import com.dnavarro.neospectro.ui.zenScreen.ZenScreen
 import com.dnavarro.neospectro.utils.onBack
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
@@ -105,6 +106,9 @@ fun AppScreen(
     }
 
     val backStack = rememberNavBackStack(Screen.Main)
+    val isZenMode by remember {
+        derivedStateOf { backStack.lastOrNull() == Screen.Zen }
+    }
     val motionScheme = motionScheme
     val cutoutInsets = WindowInsets.displayCutout.asPaddingValues()
     val layoutDirection = LocalLayoutDirection.current
@@ -114,26 +118,27 @@ fun AppScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceDim,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        style = MaterialTheme.typography.displaySmall,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(vertical = 24.dp)
+            if (!isZenMode) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.displaySmall,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(vertical = 24.dp)
+                        )
+                    },
+                    subtitle = {},
+                    titleHorizontalAlignment = CenterHorizontally,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceDim
                     )
-                },
-                subtitle = {},
-                titleHorizontalAlignment = CenterHorizontally,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceDim)
-
-
-            )
+                )
+            }
         },
         bottomBar = {
             AnimatedVisibility(
-                true,
+                !isZenMode,
                 enter = slideInVertically(motionScheme.slowSpatialSpec()) { it },
                 exit = slideOutVertically(motionScheme.slowSpatialSpec()) { it }
             ) {
@@ -229,7 +234,7 @@ fun AppScreen(
         },
         floatingActionButton =
             {
-                if (!isLwpSet) {
+                if (!isLwpSet && !isZenMode) {
                     MediumExtendedFloatingActionButton(
                         onClick = {
                             val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
@@ -273,6 +278,14 @@ fun AppScreen(
                     entry<Screen.Main> {
                         MainScreen(
                             contentPadding = contentPadding
+                        )
+                    }
+
+                    entry<Screen.Zen> {
+                        ZenScreen(
+                            onExit = {
+                                if (backStack.size > 1) backStack.removeAt(1)
+                            }
                         )
                     }
 

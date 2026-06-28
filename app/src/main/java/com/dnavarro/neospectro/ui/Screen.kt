@@ -12,6 +12,9 @@ sealed class Screen : NavKey {
     @Serializable
     object Info : Screen()
 
+    @Serializable
+    object Zen : Screen()
+
 }
 
 data class NavItem(

@@ -17,8 +17,8 @@ object NeospectroShapeDefaults {
                 bottomEnd = shapes.extraSmall.bottomStart
             )
 
-    val middleListItemShape: RoundedCornerShape
-        @Composable get() = RoundedCornerShape(shapes.extraSmall.topStart)
+    //val middleListItemShape: RoundedCornerShape
+      //  @Composable get() = RoundedCornerShape(shapes.extraSmall.topStart)
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     val bottomListItemShape: RoundedCornerShape
