@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.opengl.GLSurfaceView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -40,7 +39,6 @@ import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 import kotlinx.coroutines.delay
-import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -63,7 +61,6 @@ fun ZenScreen(
     val currentTheme = remember { prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE }
     val reverseColors = remember { prefs.getBoolean(Constants.PREF_REVERSE_COLORS, false) }
     val audioVizEnabled = remember { prefs.getBoolean(Constants.PREF_AUDIO_VIZ, false) }
-    val hasBgImage = remember { prefs.getBoolean(Constants.PREF_HAS_BG_IMAGE, false) }
 
     val theme = remember(currentTheme) { ThemeRepository.getTheme(currentTheme) }
     val edge = remember(theme, reverseColors) { if (reverseColors) theme.centerColor else theme.edgeColor }
@@ -89,20 +86,6 @@ fun ZenScreen(
 
             setRenderer(renderer)
             renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
-
-            if (hasBgImage) {
-                val file = File(context.filesDir, "bg_image.jpg")
-                if (file.exists()) {
-                    try {
-                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        queueEvent {
-                            renderer.setBackgroundImage(bitmap)
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            }
         }
     }
 

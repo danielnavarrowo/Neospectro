@@ -15,6 +15,9 @@ import javax.microedition.khronos.opengles.GL10
 import androidx.core.graphics.createBitmap
 import kotlin.math.abs
 import androidx.core.graphics.set
+import android.graphics.BitmapFactory
+import java.io.File
+import com.dnavarro.neospectro.Constants
 
 class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
@@ -103,6 +106,24 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         // Load Texture from Color
         val bitmap = generateGradientBitmap(mEdgeColor, mMiddleColor, mCenterColor)
         mTextureId = loadTexture(bitmap)
+
+        // Load Background Image if enabled
+        mBgTextureId = 0
+        val prefs = context.getSharedPreferences(Constants.PRENS_NAME, Context.MODE_PRIVATE)
+        val hasBgImage = prefs.getBoolean(Constants.PREF_HAS_BG_IMAGE, false)
+        if (hasBgImage) {
+            val file = File(context.filesDir, "bg_image.jpg")
+            if (file.exists()) {
+                try {
+                    val bgBitmap = BitmapFactory.decodeFile(file.absolutePath)
+                    if (bgBitmap != null) {
+                        mBgTextureId = loadTexture(bgBitmap)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
 
         // Compile Shaders
         val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER_CODE)
