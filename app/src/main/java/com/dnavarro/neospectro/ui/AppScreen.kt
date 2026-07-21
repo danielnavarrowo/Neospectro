@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -149,12 +150,12 @@ fun AppScreen(
                     label = {
                         Text(
                             text = stringResource(it.label),
-                            fontSize = 16.sp,
-                            lineHeight = 24.sp,
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Clip,
-                            modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 12.sp,
+                                maxFontSize = 16.sp
+                            ),
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 1
                         )
 
                     }

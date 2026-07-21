@@ -49,18 +49,21 @@ fun SelectThemeListItem(
             .clip(cardShape),
     ) {
         ListItem(
+            modifier = Modifier,
             leadingContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.palette_outlined),
-                        contentDescription = null,
-                    )
+                Icon(
+                    painter = painterResource(R.drawable.palette_outlined),
+                    contentDescription = null,
+                )
             },
-            headlineContent = { Text(
-                stringResource(R.string.choose_theme),
-                style = MaterialTheme.typography.titleMedium
-            ) },
-            colors = listItemColors,
             supportingContent = { Text(stringResource(R.string.choose_theme_desc)) },
+            colors = listItemColors,
+            content = {
+                Text(
+                    stringResource(R.string.choose_theme),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
         )
         ThemesCarousel(selectedTheme, onThemeSelected)
     }
@@ -72,7 +75,7 @@ fun ThemesCarousel(
     selectedTheme: String,
     onThemeSelected: (String) -> Unit = {},
 
-) {
+    ) {
     data class CarouselItem(
         val id: Int,
         @param:DrawableRes val imageResId: Int,
