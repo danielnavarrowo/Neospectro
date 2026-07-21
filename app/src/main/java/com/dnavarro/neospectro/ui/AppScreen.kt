@@ -46,9 +46,10 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowSize
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.rememberTooltipState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
@@ -60,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -67,6 +69,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
@@ -81,7 +84,8 @@ import com.dnavarro.neospectro.ui.mainScreen.MainScreen
 import com.dnavarro.neospectro.ui.zenScreen.ZenScreen
 import com.dnavarro.neospectro.utils.onBack
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterial3AdaptiveApi::class
 )
 @Composable
@@ -96,7 +100,8 @@ fun AppScreen(
             if (event == Lifecycle.Event.ON_RESUME) {
                 val wallpaperManager = WallpaperManager.getInstance(context)
                 val info = wallpaperManager.wallpaperInfo
-                isLwpSet = info != null && info.component == ComponentName(context, LWPService::class.java)
+                isLwpSet =
+                    info != null && info.component == ComponentName(context, LWPService::class.java)
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -113,116 +118,159 @@ fun AppScreen(
     val cutoutInsets = WindowInsets.displayCutout.asPaddingValues()
     val layoutDirection = LocalLayoutDirection.current
     val systemBarsInsets = WindowInsets.systemBars.asPaddingValues()
-    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val windowSize = with(LocalDensity.current) {
+        currentWindowSize().toSize().toDpSize()
+    }
+    val layoutType = if (windowSize.width >= 1200.dp) {
+        NavigationSuiteType.WideNavigationRailExpanded
+    } else if (windowSize.width >= 800.dp) {
+        NavigationSuiteType.WideNavigationRailCollapsed
+    } else {
+        NavigationSuiteType.None
+    }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceDim,
-        topBar = {
-            if (!isZenMode) {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = stringResource(R.string.app_name),
-                            style = MaterialTheme.typography.displaySmall,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(vertical = 24.dp)
-                        )
+    NavigationSuiteScaffold(
+        layoutType = if (isZenMode) NavigationSuiteType.None else layoutType,
+        navigationSuiteItems = {
+            mainScreens.fastForEach {
+                item(
+                    selected = backStack.lastOrNull() == it.route,
+                    onClick = {
+                        if (backStack.size < 2) backStack.add(it.route)
+                        else backStack[1] = it.route
                     },
-                    subtitle = {},
-                    titleHorizontalAlignment = CenterHorizontally,
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceDim
-                    )
+                    icon = {
+                        Icon(
+                            painterResource(it.selectedIcon),
+                            stringResource(it.label)
+                        )
+
+                    },
+                    label = {
+                        Text(
+                            text = stringResource(it.label),
+                            fontSize = 16.sp,
+                            lineHeight = 24.sp,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Clip,
+                            modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
+                        )
+
+                    }
                 )
+
             }
         },
-        bottomBar = {
-            AnimatedVisibility(
-                !isZenMode,
-                enter = slideInVertically(motionScheme.slowSpatialSpec()) { it },
-                exit = slideOutVertically(motionScheme.slowSpatialSpec()) { it }
-            ) {
-                val wide = remember(windowSizeClass) {
-                    windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact
+    ) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.surfaceDim,
+            topBar = {
+                if (!isZenMode) {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = stringResource(R.string.app_name),
+                                style = MaterialTheme.typography.displaySmall,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(vertical = 24.dp)
+                            )
+                        },
+                        subtitle = {},
+                        titleHorizontalAlignment = CenterHorizontally,
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceDim
+                        )
+                    )
                 }
-
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = cutoutInsets.calculateStartPadding(layoutDirection),
-                            end = cutoutInsets.calculateEndPadding(layoutDirection)
-                        ),
-                    Alignment.Center
-                ) {
-                    HorizontalFloatingToolbar(
-                        expanded = true,
-                        modifier = Modifier
-                            .padding(
-                                top = ScreenOffset,
-                                bottom = systemBarsInsets.calculateBottomPadding()
-                                        + ScreenOffset
-                            )
-                            .zIndex(1f)
-
+            },
+            bottomBar = {
+                if (windowSize.width < 800.dp) {
+                    AnimatedVisibility(
+                        !isZenMode,
+                        enter = slideInVertically(motionScheme.slowSpatialSpec()) { it },
+                        exit = slideOutVertically(motionScheme.slowSpatialSpec()) { it }
                     ) {
-                        mainScreens.fastForEach { item ->
-                            val selected by remember {
-                                derivedStateOf { backStack.lastOrNull() == item.route }
-                            }
-                            TooltipBox(
-                                positionProvider =
-                                    TooltipDefaults.rememberTooltipPositionProvider(
-                                        TooltipAnchorPosition.Above
-                                    ),
-                                tooltip = { PlainTooltip { Text(stringResource(item.label)) } },
-                                state = rememberTooltipState(),
-                            )
-                            {
-                                ToggleButton(
-                                    checked = selected,
-                                    onCheckedChange = if (item.route != Screen.Main) {
-                                        {
-                                            if (backStack.size < 2) backStack.add(item.route)
-                                            else backStack[1] = item.route
-                                        }
-                                    } else {
-                                        { if (backStack.size > 1) backStack.removeAt(1) }
-                                    },
-                                    shapes = ToggleButtonDefaults.shapes(
-                                        CircleShape,
-                                        CircleShape,
-                                        CircleShape
-                                    ),
-                                    modifier = Modifier.height(56.dp)
-                                    
-                                    
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Crossfade(selected) {
-                                            if (it) Icon(
-                                                painterResource(item.selectedIcon),
-                                                stringResource(item.label)
-                                            )
-                                            else Icon(
-                                                painterResource(item.unselectedIcon),
-                                                stringResource(item.label)
-                                            )
-                                        }
-                                        AnimatedVisibility(
-                                            visible = selected || wide,
-                                            enter = expandHorizontally(motionScheme.defaultSpatialSpec()),
-                                            exit = shrinkHorizontally(motionScheme.defaultSpatialSpec())
+
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    start = cutoutInsets.calculateStartPadding(layoutDirection),
+                                    end = cutoutInsets.calculateEndPadding(layoutDirection)
+                                ),
+                            Alignment.Center
+                        ) {
+                            HorizontalFloatingToolbar(
+                                expanded = true,
+                                modifier = Modifier
+                                    .padding(
+                                        top = ScreenOffset,
+                                        bottom = systemBarsInsets.calculateBottomPadding()
+                                                + ScreenOffset
+                                    )
+                                    .zIndex(1f)
+
+                            ) {
+                                mainScreens.fastForEach { item ->
+                                    val selected by remember {
+                                        derivedStateOf { backStack.lastOrNull() == item.route }
+                                    }
+                                    TooltipBox(
+                                        positionProvider =
+                                            TooltipDefaults.rememberTooltipPositionProvider(
+                                                TooltipAnchorPosition.Above
+                                            ),
+                                        tooltip = { PlainTooltip { Text(stringResource(item.label)) } },
+                                        state = rememberTooltipState(),
+                                    )
+                                    {
+                                        ToggleButton(
+                                            checked = selected,
+                                            onCheckedChange = if (item.route != Screen.Main) {
+                                                {
+                                                    if (backStack.size < 2) backStack.add(item.route)
+                                                    else backStack[1] = item.route
+                                                }
+                                            } else {
+                                                { if (backStack.size > 1) backStack.removeAt(1) }
+                                            },
+                                            shapes = ToggleButtonDefaults.shapes(
+                                                CircleShape,
+                                                CircleShape,
+                                                CircleShape
+                                            ),
+                                            modifier = Modifier.height(56.dp)
+
+
                                         ) {
-                                            Text(
-                                                text = stringResource(item.label),
-                                                fontSize = 16.sp,
-                                                lineHeight = 24.sp,
-                                                maxLines = 1,
-                                                softWrap = false,
-                                                overflow = TextOverflow.Clip,
-                                                modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
-                                            )
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Crossfade(selected) {
+                                                    if (it) Icon(
+                                                        painterResource(item.selectedIcon),
+                                                        stringResource(item.label)
+                                                    )
+                                                    else Icon(
+                                                        painterResource(item.unselectedIcon),
+                                                        stringResource(item.label)
+                                                    )
+                                                }
+                                                AnimatedVisibility(
+                                                    visible = selected,
+                                                    enter = expandHorizontally(motionScheme.defaultSpatialSpec()),
+                                                    exit = shrinkHorizontally(motionScheme.defaultSpatialSpec())
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(item.label),
+                                                        fontSize = 16.sp,
+                                                        lineHeight = 24.sp,
+                                                        maxLines = 1,
+                                                        softWrap = false,
+                                                        overflow = TextOverflow.Clip,
+                                                        modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -230,35 +278,35 @@ fun AppScreen(
                         }
                     }
                 }
-            }
-        },
-        floatingActionButton =
-            {
-                if (!isLwpSet && !isZenMode) {
-                    MediumExtendedFloatingActionButton(
-                        onClick = {
-                            val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-                            intent.putExtra(
-                                WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                                ComponentName(context, LWPService::class.java)
-                            )
-                            context.startActivity(intent)
-                        }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.apply_outlined),
-                            contentDescription = "Apply",
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.size(12.dp))
-                        Text(stringResource(R.string.apply),
-                            style = MaterialTheme.typography.titleMedium)
-                    }
-                }
             },
+            floatingActionButton =
+                {
+                    if (!isLwpSet && !isZenMode) {
+                        MediumExtendedFloatingActionButton(
+                            onClick = {
+                                val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+                                intent.putExtra(
+                                    WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                                    ComponentName(context, LWPService::class.java)
+                                )
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.apply_outlined),
+                                contentDescription = "Apply",
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Text(
+                                stringResource(R.string.apply),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+                    }
+                },
 
-    ){
-        contentPadding ->
+            ) { contentPadding ->
             NavDisplay(
                 backStack = backStack,
                 onBack = backStack::onBack,
@@ -289,14 +337,13 @@ fun AppScreen(
                         )
                     }
 
-                    entry <Screen.Info> {
+                    entry<Screen.Info> {
                         InfoScreen(
                             contentPadding = contentPadding
                         )
                     }
                 }
             )
+        }
     }
-
-
 }
