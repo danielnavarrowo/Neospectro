@@ -1,8 +1,9 @@
 package com.dnavarro.neospectro.ui.mainScreen
 
-import android.app.Application
+import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dnavarro.neospectro.data.SettingsRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -11,10 +12,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class MainViewModel @JvmOverloads constructor(
-    application: Application,
-    private val settingsRepository: SettingsRepository = SettingsRepository(application)
-) : AndroidViewModel(application) {
+class MainViewModel(
+    private val settingsRepository: SettingsRepository
+) : ViewModel() {
+
+    companion object {
+        fun provideFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return MainViewModel(SettingsRepository(context.applicationContext)) as T
+            }
+        }
+    }
 
     val uiState: StateFlow<MainUiState> = combine(
         settingsRepository.selectedTheme,
