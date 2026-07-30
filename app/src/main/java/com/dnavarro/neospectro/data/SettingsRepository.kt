@@ -13,7 +13,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-class SettingsRepository private constructor(private val context: Context) {
+class SettingsRepository private constructor(context: Context) {
+
+    private val appContext: Context = context.applicationContext
 
     companion object {
         @Volatile
@@ -27,7 +29,7 @@ class SettingsRepository private constructor(private val context: Context) {
     }
 
     private val prefs: SharedPreferences =
-        context.getSharedPreferences(Constants.PRENS_NAME, Context.MODE_PRIVATE)
+        appContext.getSharedPreferences(Constants.PRENS_NAME, Context.MODE_PRIVATE)
 
     private val _selectedTheme = MutableStateFlow(
         prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
@@ -66,7 +68,7 @@ class SettingsRepository private constructor(private val context: Context) {
     }
 
     fun getBackgroundImageFile(): File {
-        return File(context.filesDir, "bg_image.jpg")
+        return File(appContext.filesDir, "bg_image.jpg")
     }
 
     fun updateTheme(theme: String) {
@@ -91,7 +93,7 @@ class SettingsRepository private constructor(private val context: Context) {
 
     suspend fun saveBackgroundImage(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         try {
-            val inputStream = context.contentResolver.openInputStream(uri)
+            val inputStream = appContext.contentResolver.openInputStream(uri)
             val file = getBackgroundImageFile()
             val outputStream = FileOutputStream(file)
             inputStream?.use { input ->
