@@ -52,7 +52,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,8 +72,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -93,22 +91,14 @@ import com.dnavarro.neospectro.utils.onBack
 fun AppScreen(
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     var isLwpSet by remember { mutableStateOf(false) }
 
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                val wallpaperManager = WallpaperManager.getInstance(context)
-                val info = wallpaperManager.wallpaperInfo
-                isLwpSet =
-                    info != null && info.component == ComponentName(context, LWPService::class.java)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
+    LifecycleResumeEffect(Unit) {
+        val wallpaperManager = WallpaperManager.getInstance(context)
+        val info = wallpaperManager.wallpaperInfo
+        isLwpSet =
+            info != null && info.component == ComponentName(context, LWPService::class.java)
+        onPauseOrDispose { }
     }
 
     val backStack = rememberNavBackStack(Screen.Main)
