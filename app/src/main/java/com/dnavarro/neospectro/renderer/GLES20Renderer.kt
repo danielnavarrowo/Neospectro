@@ -107,7 +107,7 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Load Background Image if enabled
         mBgTextureId = 0
-        val settingsRepository = com.dnavarro.neospectro.data.SettingsRepository(context)
+        val settingsRepository = com.dnavarro.neospectro.data.SettingsRepository.getInstance(context)
         if (settingsRepository.hasBgImage()) {
             val file = settingsRepository.getBackgroundImageFile()
             if (file.exists()) {

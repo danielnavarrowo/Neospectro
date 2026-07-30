@@ -20,7 +20,7 @@ class MainViewModel(
         fun provideFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MainViewModel(SettingsRepository(context.applicationContext)) as T
+                return MainViewModel(SettingsRepository.getInstance(context.applicationContext)) as T
             }
         }
     }

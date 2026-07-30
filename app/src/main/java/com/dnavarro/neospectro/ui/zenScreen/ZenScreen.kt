@@ -48,7 +48,7 @@ fun ZenScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val activity = remember(context) { context as? Activity }
 
-    val settingsRepository = remember(context) { com.dnavarro.neospectro.data.SettingsRepository(context) }
+    val settingsRepository = remember(context) { com.dnavarro.neospectro.data.SettingsRepository.getInstance(context) }
     var showHint by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {

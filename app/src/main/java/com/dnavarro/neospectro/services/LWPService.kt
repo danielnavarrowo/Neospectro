@@ -22,7 +22,7 @@ class LWPService : OpenGLES2WallpaperService() {
 
         override fun onCreate(surfaceHolder: android.view.SurfaceHolder?) {
             super.onCreate(surfaceHolder)
-            settingsRepository = com.dnavarro.neospectro.data.SettingsRepository(applicationContext)
+            settingsRepository = com.dnavarro.neospectro.data.SettingsRepository.getInstance(applicationContext)
             prefs = applicationContext.getSharedPreferences(Constants.PRENS_NAME, MODE_PRIVATE)
             prefs.registerOnSharedPreferenceChangeListener(this)
 

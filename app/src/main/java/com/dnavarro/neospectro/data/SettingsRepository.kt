@@ -13,7 +13,18 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-class SettingsRepository(private val context: Context) {
+class SettingsRepository private constructor(private val context: Context) {
+
+    companion object {
+        @Volatile
+        private var INSTANCE: SettingsRepository? = null
+
+        fun getInstance(context: Context): SettingsRepository {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: SettingsRepository(context.applicationContext).also { INSTANCE = it }
+            }
+        }
+    }
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences(Constants.PRENS_NAME, Context.MODE_PRIVATE)
