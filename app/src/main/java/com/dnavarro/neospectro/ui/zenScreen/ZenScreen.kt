@@ -2,7 +2,6 @@ package com.dnavarro.neospectro.ui.zenScreen
 
 import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.pm.PackageManager
 import android.opengl.GLSurfaceView
 import androidx.compose.animation.AnimatedVisibility
@@ -35,7 +34,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 import kotlinx.coroutines.delay
@@ -50,7 +48,7 @@ fun ZenScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val activity = remember(context) { context as? Activity }
 
-    val prefs = remember { context.getSharedPreferences(Constants.PRENS_NAME, Context.MODE_PRIVATE) }
+    val settingsRepository = remember(context) { com.dnavarro.neospectro.data.SettingsRepository(context) }
     var showHint by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -58,9 +56,9 @@ fun ZenScreen(
         showHint = false
     }
 
-    val currentTheme = remember { prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE }
-    val reverseColors = remember { prefs.getBoolean(Constants.PREF_REVERSE_COLORS, false) }
-    val audioVizEnabled = remember { prefs.getBoolean(Constants.PREF_AUDIO_VIZ, false) }
+    val currentTheme = remember { settingsRepository.getTheme() }
+    val reverseColors = remember { settingsRepository.isReverseColors() }
+    val audioVizEnabled = remember { settingsRepository.isAudioVizEnabled() }
 
     val theme = remember(currentTheme) { ThemeRepository.getTheme(currentTheme) }
     val edge = remember(theme, reverseColors) { if (reverseColors) theme.centerColor else theme.edgeColor }

@@ -86,7 +86,7 @@ fun MainScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            viewModel.handleBgImagePicked(uri, context)
+            viewModel.handleBgImagePicked(uri)
             showBgSheet = false
         }
     }

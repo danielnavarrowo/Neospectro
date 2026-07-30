@@ -8,7 +8,6 @@ import android.graphics.Color
 import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
-import java.io.File
 
 class LWPService : OpenGLES2WallpaperService() {
     override fun onCreateEngine(): Engine {
@@ -17,23 +16,25 @@ class LWPService : OpenGLES2WallpaperService() {
     inner class NeospectroEngine : GLEngine(), SharedPreferences.OnSharedPreferenceChangeListener {
         private var renderer: GLES20Renderer? = null
         private lateinit var prefs: SharedPreferences
+        private lateinit var settingsRepository: com.dnavarro.neospectro.data.SettingsRepository
         private var currentTheme: String = Constants.THEME_ICE
         private var reverseColors: Boolean = false
 
         override fun onCreate(surfaceHolder: android.view.SurfaceHolder?) {
             super.onCreate(surfaceHolder)
+            settingsRepository = com.dnavarro.neospectro.data.SettingsRepository(applicationContext)
             prefs = applicationContext.getSharedPreferences(Constants.PRENS_NAME, MODE_PRIVATE)
             prefs.registerOnSharedPreferenceChangeListener(this)
 
             renderer = GLES20Renderer(this@LWPService)
 
             // Set initial texture
-            currentTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
-            reverseColors = prefs.getBoolean(Constants.PREF_REVERSE_COLORS, false)
+            currentTheme = settingsRepository.getTheme()
+            reverseColors = settingsRepository.isReverseColors()
             val theme = ThemeRepository.getTheme(currentTheme)
 
             val edge = if (reverseColors) theme.centerColor else theme.edgeColor
-            val center = if (reverseColors) theme.edgeColor else theme.centerColor
+            val center = if (reverseColors) theme.edgeColor else theme.edgeColor
 
             renderer!!.mEdgeColor = edge
             renderer!!.mMiddleColor = theme.middleColor
@@ -86,9 +87,9 @@ class LWPService : OpenGLES2WallpaperService() {
         }
 
         private fun checkAndUpdateBgImage() {
-            val hasBg = prefs.getBoolean(Constants.PREF_HAS_BG_IMAGE, false)
+            val hasBg = settingsRepository.hasBgImage()
             if (hasBg) {
-                val file = File(applicationContext.filesDir, "bg_image.jpg")
+                val file = settingsRepository.getBackgroundImageFile()
                 if (file.exists()) {
                     val bitmap = BitmapFactory.decodeFile(file.absolutePath)
                     queueEvent {
@@ -107,8 +108,8 @@ class LWPService : OpenGLES2WallpaperService() {
         }
 
         private fun checkAndUpdateTheme() {
-            val newTheme = prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
-            val newReverse = prefs.getBoolean(Constants.PREF_REVERSE_COLORS, false)
+            val newTheme = settingsRepository.getTheme()
+            val newReverse = settingsRepository.isReverseColors()
 
             if (newTheme != currentTheme || newReverse != reverseColors) {
                 currentTheme = newTheme
@@ -127,7 +128,7 @@ class LWPService : OpenGLES2WallpaperService() {
 
         private fun checkAudioPermission() {
              var hasPermission = false
-             val isEnabledInSettings = prefs.getBoolean(Constants.PREF_AUDIO_VIZ, false)
+             val isEnabledInSettings = settingsRepository.isAudioVizEnabled()
 
              if (isEnabledInSettings && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                  hasPermission = true

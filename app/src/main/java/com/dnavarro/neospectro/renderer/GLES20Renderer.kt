@@ -1,23 +1,21 @@
 package com.dnavarro.neospectro.renderer
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
-import android.opengl.Matrix
-import android.graphics.Bitmap
-import android.graphics.Color
 import android.opengl.GLUtils
+import android.opengl.Matrix
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.set
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import androidx.core.graphics.createBitmap
 import kotlin.math.abs
-import androidx.core.graphics.set
-import android.graphics.BitmapFactory
-import java.io.File
-import com.dnavarro.neospectro.Constants
 
 class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
@@ -109,10 +107,9 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Load Background Image if enabled
         mBgTextureId = 0
-        val prefs = context.getSharedPreferences(Constants.PRENS_NAME, Context.MODE_PRIVATE)
-        val hasBgImage = prefs.getBoolean(Constants.PREF_HAS_BG_IMAGE, false)
-        if (hasBgImage) {
-            val file = File(context.filesDir, "bg_image.jpg")
+        val settingsRepository = com.dnavarro.neospectro.data.SettingsRepository(context)
+        if (settingsRepository.hasBgImage()) {
+            val file = settingsRepository.getBackgroundImageFile()
             if (file.exists()) {
                 try {
                     val bgBitmap = BitmapFactory.decodeFile(file.absolutePath)

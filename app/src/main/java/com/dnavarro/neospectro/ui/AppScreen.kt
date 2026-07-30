@@ -123,7 +123,7 @@ fun AppScreen(
         currentWindowSize().toSize().toDpSize()
     }
     val layoutType = if (windowSize.width >= 1200.dp) {
-        NavigationSuiteType.WideNavigationRailExpanded
+            NavigationSuiteType.WideNavigationRailExpanded
     } else if (windowSize.width >= 800.dp) {
         NavigationSuiteType.WideNavigationRailCollapsed
     } else {
