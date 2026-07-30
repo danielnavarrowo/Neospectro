@@ -74,11 +74,12 @@ fun MainScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    val selectedTheme by viewModel.selectedTheme.collectAsState()
-    val reverseColors by viewModel.reverseColors.collectAsState()
-    val audioVizEnabled by viewModel.audioVizEnabled.collectAsState()
-    val hasBgImage by viewModel.hasBgImage.collectAsState()
-    val bgImageTrigger by viewModel.bgImageTrigger.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val selectedTheme = uiState.selectedTheme
+    val reverseColors = uiState.reverseColors
+    val audioVizEnabled = uiState.audioVizEnabled
+    val hasBgImage = uiState.hasBgImage
+    val bgImageTrigger = uiState.bgImageTrigger
 
     var showBgSheet by remember { mutableStateOf(false) }
 

@@ -5,7 +5,10 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.dnavarro.neospectro.data.SettingsRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MainViewModel @JvmOverloads constructor(
@@ -13,11 +16,30 @@ class MainViewModel @JvmOverloads constructor(
     private val settingsRepository: SettingsRepository = SettingsRepository(application)
 ) : AndroidViewModel(application) {
 
-    val selectedTheme: StateFlow<String> = settingsRepository.selectedTheme
-    val reverseColors: StateFlow<Boolean> = settingsRepository.reverseColors
-    val audioVizEnabled: StateFlow<Boolean> = settingsRepository.audioVizEnabled
-    val hasBgImage: StateFlow<Boolean> = settingsRepository.hasBgImage
-    val bgImageTrigger: StateFlow<Int> = settingsRepository.bgImageTrigger
+    val uiState: StateFlow<MainUiState> = combine(
+        settingsRepository.selectedTheme,
+        settingsRepository.reverseColors,
+        settingsRepository.audioVizEnabled,
+        settingsRepository.hasBgImage,
+        settingsRepository.bgImageTrigger
+    ) { theme, reverse, audioViz, hasBg, bgTrigger ->
+        MainUiState(
+            selectedTheme = theme,
+            reverseColors = reverse,
+            audioVizEnabled = audioViz,
+            hasBgImage = hasBg,
+            bgImageTrigger = bgTrigger
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = MainUiState(
+            selectedTheme = settingsRepository.getTheme(),
+            reverseColors = settingsRepository.isReverseColors(),
+            audioVizEnabled = settingsRepository.isAudioVizEnabled(),
+            hasBgImage = settingsRepository.hasBgImage()
+        )
+    )
 
     fun updateTheme(theme: String) {
         settingsRepository.updateTheme(theme)
