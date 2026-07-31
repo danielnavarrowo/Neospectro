@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dnavarro.neospectro.R
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dnavarro.neospectro.ui.mainScreen.MainViewModel
@@ -99,6 +100,21 @@ fun InfoScreen(
                         Switch(
                             checked = isCustomThemeEnabled,
                             onCheckedChange = { viewModel.updateCustomThemeEnabled(it) },
+                            thumbContent = {
+                                if (isCustomThemeEnabled) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.check),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                } else {
+                                    Icon(
+                                        painter = painterResource(R.drawable.clear),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                }
+                            },
                             colors = switchColors
                         )
                     }
