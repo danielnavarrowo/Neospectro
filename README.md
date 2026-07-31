@@ -5,6 +5,13 @@
 A modern rewrite of Music Visualization Wallpapers, the wavy Live Wallpaper created by the AOSP team back in the day.
 With new functions, 7 vibrant themes and a Material 3 Expressive user interface.
 
+## Extra functions
+
+- 7 predefined themes + custom theming
+- Audio visualization
+- Select your favorite image as a background
+- Zen mode
+
 ## Download this app
 
 - Check out [Github Releases](https://github.com/danielnavarrowo/Neospectro/releases).
