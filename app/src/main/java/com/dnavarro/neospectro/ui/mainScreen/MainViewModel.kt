@@ -30,14 +30,22 @@ class MainViewModel(
         settingsRepository.reverseColors,
         settingsRepository.audioVizEnabled,
         settingsRepository.hasBgImage,
-        settingsRepository.bgImageTrigger
-    ) { theme, reverse, audioViz, hasBg, bgTrigger ->
+        settingsRepository.bgImageTrigger,
+        settingsRepository.isCustomThemeEnabled,
+        settingsRepository.customEdgeColor,
+        settingsRepository.customMiddleColor,
+        settingsRepository.customCenterColor
+    ) { args: Array<Any> ->
         MainUiState(
-            selectedTheme = theme,
-            reverseColors = reverse,
-            audioVizEnabled = audioViz,
-            hasBgImage = hasBg,
-            bgImageTrigger = bgTrigger
+            selectedTheme = args[0] as String,
+            reverseColors = args[1] as Boolean,
+            audioVizEnabled = args[2] as Boolean,
+            hasBgImage = args[3] as Boolean,
+            bgImageTrigger = args[4] as Int,
+            isCustomThemeEnabled = args[5] as Boolean,
+            customEdgeColor = args[6] as Int,
+            customMiddleColor = args[7] as Int,
+            customCenterColor = args[8] as Int
         )
     }.stateIn(
         scope = viewModelScope,
@@ -46,9 +54,21 @@ class MainViewModel(
             selectedTheme = settingsRepository.getTheme(),
             reverseColors = settingsRepository.isReverseColors(),
             audioVizEnabled = settingsRepository.isAudioVizEnabled(),
-            hasBgImage = settingsRepository.hasBgImage()
+            hasBgImage = settingsRepository.hasBgImage(),
+            isCustomThemeEnabled = settingsRepository.isCustomThemeEnabled(),
+            customEdgeColor = settingsRepository.getCustomEdgeColor(),
+            customMiddleColor = settingsRepository.getCustomMiddleColor(),
+            customCenterColor = settingsRepository.getCustomCenterColor()
         )
     )
+
+    fun updateCustomThemeEnabled(enabled: Boolean) {
+        settingsRepository.updateCustomThemeEnabled(enabled)
+    }
+
+    fun updateCustomColors(edge: Int, middle: Int, center: Int) {
+        settingsRepository.updateCustomColors(edge, middle, center)
+    }
 
     fun updateTheme(theme: String) {
         settingsRepository.updateTheme(theme)

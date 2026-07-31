@@ -81,8 +81,13 @@ fun MainScreen(
     val audioVizEnabled = uiState.audioVizEnabled
     val hasBgImage = uiState.hasBgImage
     val bgImageTrigger = uiState.bgImageTrigger
+    val isCustomThemeEnabled = uiState.isCustomThemeEnabled
+    val customEdgeColor = uiState.customEdgeColor
+    val customMiddleColor = uiState.customMiddleColor
+    val customCenterColor = uiState.customCenterColor
 
     var showBgSheet by remember { mutableStateOf(false) }
+    var showColorPickerDialog by remember { mutableStateOf(false) }
 
     val bgImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -186,6 +191,18 @@ fun MainScreen(
             }
         }
 
+        if (showColorPickerDialog) {
+            com.dnavarro.neospectro.ui.mainScreen.components.CustomColorPickerDialog(
+                initialEdgeColor = customEdgeColor,
+                initialMiddleColor = customMiddleColor,
+                initialCenterColor = customCenterColor,
+                onDismissRequest = { showColorPickerDialog = false },
+                onColorsSelected = { edge, middle, center ->
+                    viewModel.updateCustomColors(edge, middle, center)
+                }
+            )
+        }
+
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
@@ -198,13 +215,23 @@ fun MainScreen(
                 ) {
 
 
-                    SelectThemeListItem(
-                        modifier = Modifier.padding(innerPadding).weight(1f),
-                        selectedTheme = selectedTheme,
-                        onThemeSelected = { theme ->
-                            viewModel.updateTheme(theme)
-                        }
-                    )
+                    if (isCustomThemeEnabled) {
+                        com.dnavarro.neospectro.ui.mainScreen.components.CustomThemeListItem(
+                            modifier = Modifier.padding(innerPadding).weight(1f),
+                            edgeColor = customEdgeColor,
+                            middleColor = customMiddleColor,
+                            centerColor = customCenterColor,
+                            onEditColorsClick = { showColorPickerDialog = true }
+                        )
+                    } else {
+                        SelectThemeListItem(
+                            modifier = Modifier.padding(innerPadding).weight(1f),
+                            selectedTheme = selectedTheme,
+                            onThemeSelected = { theme ->
+                                viewModel.updateTheme(theme)
+                            }
+                        )
+                    }
 
                     LazyColumn(
                         contentPadding = innerPadding,
@@ -243,12 +270,21 @@ fun MainScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     item {
-                        SelectThemeListItem(
-                            selectedTheme = selectedTheme,
-                            onThemeSelected = { theme ->
-                                viewModel.updateTheme(theme)
-                            }
-                        )
+                        if (isCustomThemeEnabled) {
+                            com.dnavarro.neospectro.ui.mainScreen.components.CustomThemeListItem(
+                                edgeColor = customEdgeColor,
+                                middleColor = customMiddleColor,
+                                centerColor = customCenterColor,
+                                onEditColorsClick = { showColorPickerDialog = true }
+                            )
+                        } else {
+                            SelectThemeListItem(
+                                selectedTheme = selectedTheme,
+                                onThemeSelected = { theme ->
+                                    viewModel.updateTheme(theme)
+                                }
+                            )
+                        }
                         Spacer(
                             modifier = Modifier.height(16.dp)
                         )

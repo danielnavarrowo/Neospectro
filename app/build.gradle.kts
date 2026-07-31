@@ -12,8 +12,8 @@ android {
         applicationId = "com.dnavarro.neospectro"
         minSdk = 27
         targetSdk = 37
-        versionCode = 7
-        versionName = "1.3.0"
+        versionCode = 8
+        versionName = "1.4.0"
     }
 
     buildTypes {
@@ -28,8 +28,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_25
-        targetCompatibility = JavaVersion.VERSION_25
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true

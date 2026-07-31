@@ -17,4 +17,20 @@
     <string name="choose_image">Choose image</string>
 
     <string name="original_code_desc">Based on Music Visualization Wallpapers by The Android Open Source Project</string>
+    <string name="custom_theming">Custom theming</string>
+    <string name="custom_theming_desc">Use custom wave colors instead of preset themes. This might result in ugly results, that will not be my fault!</string>
+    <string name="configure_custom_colors_desc">Choose the colors you want to use for the custom theme.</string>
+    <string name="edit_custom_colors">Edit Custom Colors</string>
+    <string name="gradient_preview">Gradient Preview</string>
+    <string name="edge">Edge</string>
+    <string name="middle">Middle</string>
+    <string name="center">Center</string>
+    <string name="quick_presets">Quick Presets</string>
+    <string name="color_red">Red: %1$d</string>
+    <string name="color_green">Green: %1$d</string>
+    <string name="color_blue">Blue: %1$d</string>
+    <string name="save_colors">Save Colors</string>
+    <string name="cancel">Cancel</string>
+    <string name="hex_color">HEX Color</string>
+    <string name="current_color">Current color</string>
 </resources>

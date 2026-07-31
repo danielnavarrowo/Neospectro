@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import com.dnavarro.neospectro.Constants
-import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 
 class LWPService : OpenGLES2WallpaperService() {
@@ -31,7 +30,7 @@ class LWPService : OpenGLES2WallpaperService() {
             // Set initial texture
             currentTheme = settingsRepository.getTheme()
             reverseColors = settingsRepository.isReverseColors()
-            val theme = ThemeRepository.getTheme(currentTheme)
+            val theme = settingsRepository.getActiveWaveTheme()
 
             val edge = if (reverseColors) theme.centerColor else theme.edgeColor
             val center = if (reverseColors) theme.edgeColor else theme.centerColor
@@ -53,7 +52,9 @@ class LWPService : OpenGLES2WallpaperService() {
 
         override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
             when (key) {
-                Constants.PREF_THEME, Constants.PREF_REVERSE_COLORS -> {
+                Constants.PREF_THEME, Constants.PREF_REVERSE_COLORS,
+                Constants.PREF_CUSTOM_THEME_ENABLED, Constants.PREF_CUSTOM_EDGE_COLOR,
+                Constants.PREF_CUSTOM_MIDDLE_COLOR, Constants.PREF_CUSTOM_CENTER_COLOR -> {
                     checkAndUpdateTheme()
                 }
                 Constants.PREF_AUDIO_VIZ -> {
@@ -66,7 +67,7 @@ class LWPService : OpenGLES2WallpaperService() {
         }
 
         override fun onComputeColors(): WallpaperColors {
-            val theme = ThemeRepository.getTheme(currentTheme)
+            val theme = settingsRepository.getActiveWaveTheme()
             val edge = if (reverseColors) theme.centerColor else theme.edgeColor
             val center = if (reverseColors) theme.edgeColor else theme.centerColor
             return WallpaperColors(
@@ -110,20 +111,18 @@ class LWPService : OpenGLES2WallpaperService() {
         private fun checkAndUpdateTheme() {
             val newTheme = settingsRepository.getTheme()
             val newReverse = settingsRepository.isReverseColors()
+            val theme = settingsRepository.getActiveWaveTheme()
 
-            if (newTheme != currentTheme || newReverse != reverseColors) {
-                currentTheme = newTheme
-                reverseColors = newReverse
-                val theme = ThemeRepository.getTheme(newTheme)
+            currentTheme = newTheme
+            reverseColors = newReverse
 
-                val edge = if (reverseColors) theme.centerColor else theme.edgeColor
-                val center = if (reverseColors) theme.edgeColor else theme.centerColor
+            val edge = if (reverseColors) theme.centerColor else theme.edgeColor
+            val center = if (reverseColors) theme.edgeColor else theme.centerColor
 
-                queueEvent {
-                    renderer?.updateTextureColor(edge, theme.middleColor, center)
-                }
-                notifyColorsChanged()
+            queueEvent {
+                renderer?.updateTextureColor(edge, theme.middleColor, center)
             }
+            notifyColorsChanged()
         }
 
         private fun checkAudioPermission() {

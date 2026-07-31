@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +68,73 @@ fun SelectThemeListItem(
             },
         )
         ThemesCarousel(selectedTheme, onThemeSelected)
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun CustomThemeListItem(
+    modifier: Modifier = Modifier,
+    edgeColor: Int,
+    middleColor: Int,
+    centerColor: Int,
+    onEditColorsClick: () -> Unit
+) {
+    Column(
+        modifier.clip(cardShape).background(
+            color = colorScheme.surface
+        )
+    ) {
+        ListItem(
+            modifier = Modifier,
+            leadingContent = {
+                Icon(
+                    painter = painterResource(R.drawable.palette_outlined),
+                    contentDescription = null,
+                )
+            },
+            supportingContent = { Text(stringResource(R.string.configure_custom_colors_desc)) },
+            colors = listItemColors,
+            content = {
+                Text(
+                    stringResource(R.string.custom_theming),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(cardShape)
+                        .background(
+                            androidx.compose.ui.graphics.Brush.verticalGradient(
+                                listOf(
+                                    Color(edgeColor),
+                                    Color(middleColor),
+                                    Color(centerColor),
+                                    Color(middleColor),
+                                    Color(edgeColor)
+                                )
+                            )
+                        )
+                )
+                androidx.compose.material3.Button(
+                    onClick = onEditColorsClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.edit_custom_colors))
+                }
+            }
+        }
     }
 }
 

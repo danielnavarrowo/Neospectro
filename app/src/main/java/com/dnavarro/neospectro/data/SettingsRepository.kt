@@ -51,8 +51,57 @@ class SettingsRepository private constructor(context: Context) {
     private val _bgImageTrigger = MutableStateFlow(0)
     val bgImageTrigger: StateFlow<Int> = _bgImageTrigger.asStateFlow()
 
+    private val _isCustomThemeEnabled = MutableStateFlow(
+        prefs.getBoolean(Constants.PREF_CUSTOM_THEME_ENABLED, false)
+    )
+    val isCustomThemeEnabled: StateFlow<Boolean> = _isCustomThemeEnabled.asStateFlow()
+
+    private val _customEdgeColor = MutableStateFlow(
+        prefs.getInt(Constants.PREF_CUSTOM_EDGE_COLOR, android.graphics.Color.rgb(3, 3, 255))
+    )
+    val customEdgeColor: StateFlow<Int> = _customEdgeColor.asStateFlow()
+
+    private val _customMiddleColor = MutableStateFlow(
+        prefs.getInt(Constants.PREF_CUSTOM_MIDDLE_COLOR, android.graphics.Color.rgb(123, 123, 255))
+    )
+    val customMiddleColor: StateFlow<Int> = _customMiddleColor.asStateFlow()
+
+    private val _customCenterColor = MutableStateFlow(
+        prefs.getInt(Constants.PREF_CUSTOM_CENTER_COLOR, android.graphics.Color.rgb(241, 241, 255))
+    )
+    val customCenterColor: StateFlow<Int> = _customCenterColor.asStateFlow()
+
     fun getTheme(): String {
         return prefs.getString(Constants.PREF_THEME, Constants.THEME_ICE) ?: Constants.THEME_ICE
+    }
+
+    fun isCustomThemeEnabled(): Boolean {
+        return prefs.getBoolean(Constants.PREF_CUSTOM_THEME_ENABLED, false)
+    }
+
+    fun getCustomEdgeColor(): Int {
+        return prefs.getInt(Constants.PREF_CUSTOM_EDGE_COLOR, android.graphics.Color.rgb(3, 3, 255))
+    }
+
+    fun getCustomMiddleColor(): Int {
+        return prefs.getInt(Constants.PREF_CUSTOM_MIDDLE_COLOR, android.graphics.Color.rgb(123, 123, 255))
+    }
+
+    fun getCustomCenterColor(): Int {
+        return prefs.getInt(Constants.PREF_CUSTOM_CENTER_COLOR, android.graphics.Color.rgb(241, 241, 255))
+    }
+
+    fun getActiveWaveTheme(): WaveTheme {
+        return if (isCustomThemeEnabled()) {
+            WaveTheme(
+                id = Constants.THEME_CUSTOM,
+                edgeColor = getCustomEdgeColor(),
+                middleColor = getCustomMiddleColor(),
+                centerColor = getCustomCenterColor()
+            )
+        } else {
+            ThemeRepository.getTheme(getTheme())
+        }
     }
 
     fun isReverseColors(): Boolean {
@@ -69,6 +118,22 @@ class SettingsRepository private constructor(context: Context) {
 
     fun getBackgroundImageFile(): File {
         return File(appContext.filesDir, "bg_image.jpg")
+    }
+
+    fun updateCustomThemeEnabled(enabled: Boolean) {
+        _isCustomThemeEnabled.value = enabled
+        prefs.edit { putBoolean(Constants.PREF_CUSTOM_THEME_ENABLED, enabled) }
+    }
+
+    fun updateCustomColors(edge: Int, middle: Int, center: Int) {
+        _customEdgeColor.value = edge
+        _customMiddleColor.value = middle
+        _customCenterColor.value = center
+        prefs.edit {
+            putInt(Constants.PREF_CUSTOM_EDGE_COLOR, edge)
+            putInt(Constants.PREF_CUSTOM_MIDDLE_COLOR, middle)
+            putInt(Constants.PREF_CUSTOM_CENTER_COLOR, center)
+        }
     }
 
     fun updateTheme(theme: String) {

@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
@@ -32,6 +33,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.dnavarro.neospectro.R
+import androidx.compose.material3.Switch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dnavarro.neospectro.ui.mainScreen.MainViewModel
+import com.dnavarro.neospectro.ui.theme.CustomColors.switchColors
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.bottomListItemShape
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
@@ -39,7 +45,15 @@ import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun InfoScreen (contentPadding: PaddingValues) {
+fun InfoScreen(
+    contentPadding: PaddingValues,
+    viewModel: MainViewModel = viewModel(
+        factory = MainViewModel.provideFactory(androidx.compose.ui.platform.LocalContext.current)
+    )
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isCustomThemeEnabled = uiState.isCustomThemeEnabled
+
     Scaffold(
         topBar = { Spacer(Modifier.height(contentPadding.calculateTopPadding())) },
         bottomBar = { Spacer(Modifier.height(contentPadding.calculateBottomPadding())) },
@@ -52,6 +66,45 @@ fun InfoScreen (contentPadding: PaddingValues) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)) {
+            item {
+                Box(
+                    Modifier
+                        .background(listItemColors.containerColor, cardShape)
+                        .clickable { viewModel.updateCustomThemeEnabled(!isCustomThemeEnabled) }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.palette_outlined),
+                            tint = colorScheme.primary,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(32.dp)
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                stringResource(R.string.custom_theming),
+                                style = typography.titleMedium,
+                                color = colorScheme.onSurface
+                            )
+                            Text(
+                                stringResource(R.string.custom_theming_desc),
+                                style = typography.bodySmall,
+                                color = colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = isCustomThemeEnabled,
+                            onCheckedChange = { viewModel.updateCustomThemeEnabled(it) },
+                            colors = switchColors
+                        )
+                    }
+                }
+                Spacer(Modifier.height(32.dp))
+            }
             item {
                 Box(Modifier.background(listItemColors.containerColor, topListItemShape).clickable(onClick = {})) {
                     Row(

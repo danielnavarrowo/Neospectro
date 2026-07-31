@@ -36,7 +36,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dnavarro.neospectro.data.SettingsRepository
-import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -61,8 +60,14 @@ fun ZenScreen(
     val currentTheme by settingsRepository.selectedTheme.collectAsStateWithLifecycle()
     val reverseColors by settingsRepository.reverseColors.collectAsStateWithLifecycle()
     val audioVizEnabled by settingsRepository.audioVizEnabled.collectAsStateWithLifecycle()
+    val isCustomThemeEnabled by settingsRepository.isCustomThemeEnabled.collectAsStateWithLifecycle()
+    val customEdgeColor by settingsRepository.customEdgeColor.collectAsStateWithLifecycle()
+    val customMiddleColor by settingsRepository.customMiddleColor.collectAsStateWithLifecycle()
+    val customCenterColor by settingsRepository.customCenterColor.collectAsStateWithLifecycle()
 
-    val theme = remember(currentTheme) { ThemeRepository.getTheme(currentTheme) }
+    val theme = remember(currentTheme, isCustomThemeEnabled, customEdgeColor, customMiddleColor, customCenterColor) {
+        settingsRepository.getActiveWaveTheme()
+    }
     val edge = remember(theme, reverseColors) { if (reverseColors) theme.centerColor else theme.edgeColor }
     val center = remember(theme, reverseColors) { if (reverseColors) theme.edgeColor else theme.centerColor }
 
