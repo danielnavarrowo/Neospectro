@@ -40,7 +40,7 @@ import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
@@ -226,8 +226,8 @@ fun AppScreen(
                                             } else {
                                                 { if (backStack.size > 1) backStack.removeAt(1) }
                                             },
-                                            shapes = ToggleButtonDefaults.shapes(
-                                                CircleShape,
+                                            shapes = ToggleButtonShapes(
+                                               CircleShape,
                                                 CircleShape,
                                                 CircleShape
                                             ),

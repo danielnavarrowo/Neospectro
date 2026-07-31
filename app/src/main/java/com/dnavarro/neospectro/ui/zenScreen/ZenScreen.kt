@@ -34,6 +34,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dnavarro.neospectro.data.SettingsRepository
 import com.dnavarro.neospectro.data.ThemeRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 import kotlinx.coroutines.delay
@@ -48,7 +50,7 @@ fun ZenScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val activity = remember(context) { context as? Activity }
 
-    val settingsRepository = remember(context) { com.dnavarro.neospectro.data.SettingsRepository.getInstance(context) }
+    val settingsRepository = remember(context) { SettingsRepository.getInstance(context) }
     var showHint by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -56,9 +58,9 @@ fun ZenScreen(
         showHint = false
     }
 
-    val currentTheme = remember { settingsRepository.getTheme() }
-    val reverseColors = remember { settingsRepository.isReverseColors() }
-    val audioVizEnabled = remember { settingsRepository.isAudioVizEnabled() }
+    val currentTheme by settingsRepository.selectedTheme.collectAsStateWithLifecycle()
+    val reverseColors by settingsRepository.reverseColors.collectAsStateWithLifecycle()
+    val audioVizEnabled by settingsRepository.audioVizEnabled.collectAsStateWithLifecycle()
 
     val theme = remember(currentTheme) { ThemeRepository.getTheme(currentTheme) }
     val edge = remember(theme, reverseColors) { if (reverseColors) theme.centerColor else theme.edgeColor }
@@ -71,7 +73,7 @@ fun ZenScreen(
             setEGLContextClientVersion(2)
             keepScreenOn = true
 
-            // Set renderer parameters
+            // Set initial renderer parameters
             renderer.mEdgeColor = edge
             renderer.mMiddleColor = theme.middleColor
             renderer.mCenterColor = center
@@ -85,6 +87,20 @@ fun ZenScreen(
             setRenderer(renderer)
             renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
         }
+    }
+
+    LaunchedEffect(edge, center, theme) {
+        glSurfaceView.queueEvent {
+            renderer.updateTextureColor(edge, theme.middleColor, center)
+        }
+    }
+
+    LaunchedEffect(audioVizEnabled) {
+        val hasAudioPermission = audioVizEnabled && ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED
+        renderer.setAudioEnabled(hasAudioPermission)
     }
 
     // Handle Immersive Fullscreen (hide status/navigation bar)

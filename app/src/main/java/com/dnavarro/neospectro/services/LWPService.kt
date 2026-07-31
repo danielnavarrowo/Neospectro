@@ -34,7 +34,7 @@ class LWPService : OpenGLES2WallpaperService() {
             val theme = ThemeRepository.getTheme(currentTheme)
 
             val edge = if (reverseColors) theme.centerColor else theme.edgeColor
-            val center = if (reverseColors) theme.edgeColor else theme.edgeColor
+            val center = if (reverseColors) theme.edgeColor else theme.centerColor
 
             renderer!!.mEdgeColor = edge
             renderer!!.mMiddleColor = theme.middleColor
