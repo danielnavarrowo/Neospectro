@@ -35,4 +35,11 @@
     <string name="current_color">Current color</string>
     <string name="zen_mode_description">Tap anywhere to exit Zen mode</string>
     <string name="developer">Developer</string>
+    <string name="ice">Ice</string>
+    <string name="acid">Acid</string>
+    <string name="fire">Fire</string>
+    <string name="pink">Pink</string>
+    <string name="cyan">Cyan</string>
+    <string name="yellow">Yellow</string>
+    <string name="purple">Purple</string>
 </resources>

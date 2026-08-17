@@ -34,4 +34,11 @@
     <string name="current_color">Color actual</string>
     <string name="zen_mode_description">Toca en cualquier lado para salir del modo Zen.</string>
     <string name="developer">Desarrollador</string>
+    <string name="ice">Hielo</string>
+    <string name="acid">Ácido</string>
+    <string name="fire">Fuego</string>
+    <string name="pink">Rosa</string>
+    <string name="cyan">Cian</string>
+    <string name="yellow">Amarillo</string>
+    <string name="purple">Morado</string>
 </resources>

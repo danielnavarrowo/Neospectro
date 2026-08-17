@@ -1,6 +1,7 @@
 package com.dnavarro.neospectro.ui.mainScreen.components
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -148,19 +149,19 @@ fun ThemesCarousel(
     data class CarouselItem(
         val id: Int,
         @param:DrawableRes val imageResId: Int,
-        val contentDescription: String,
+        @StringRes val contentDescriptionRes: Int,
         val theme: String
     )
 
     val items = remember {
         listOf(
-            CarouselItem(0, R.drawable.ice, "Ice", Constants.THEME_ICE),
-            CarouselItem(1, R.drawable.acid, "Acid", Constants.THEME_ACID),
-            CarouselItem(2, R.drawable.fire, "Fire", Constants.THEME_FIRE),
-            CarouselItem(3, R.drawable.pink, "Pink", Constants.THEME_PINK),
-            CarouselItem(4, R.drawable.cyan, "Cyan", Constants.THEME_CYAN),
-            CarouselItem(5, R.drawable.yellow, "Yellow", Constants.THEME_YELLOW),
-            CarouselItem(6, R.drawable.purple, "Purple", Constants.THEME_PURPLE),
+            CarouselItem(0, R.drawable.ice, R.string.ice, Constants.THEME_ICE),
+            CarouselItem(1, R.drawable.acid, R.string.acid, Constants.THEME_ACID),
+            CarouselItem(2, R.drawable.fire, R.string.fire, Constants.THEME_FIRE),
+            CarouselItem(3, R.drawable.pink, R.string.pink, Constants.THEME_PINK),
+            CarouselItem(4, R.drawable.cyan, R.string.cyan, Constants.THEME_CYAN),
+            CarouselItem(5, R.drawable.yellow, R.string.yellow, Constants.THEME_YELLOW),
+            CarouselItem(6, R.drawable.purple, R.string.purple, Constants.THEME_PURPLE),
             //CarouselItem(7, R.drawable.purple, "Custom", Constants.THEME_CUSTOM),
         )
     }
@@ -196,7 +197,7 @@ fun ThemesCarousel(
             Image(
                 modifier = Modifier.matchParentSize(),
                 painter = painterResource(id = item.imageResId),
-                contentDescription = item.contentDescription,
+                contentDescription = stringResource(item.contentDescriptionRes),
                 contentScale = ContentScale.Crop
             )
             AnimatedVisibility(
@@ -208,7 +209,7 @@ fun ThemesCarousel(
                 exit = fadeOut()
             ) {
                 Text(
-                    text = item.contentDescription,
+                    text = stringResource(item.contentDescriptionRes),
                     color = Color.White,
                     style = MaterialTheme.typography.headlineSmall
                 )
