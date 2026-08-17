@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="wallpaper_description">Piérdete en las olas danzantes.</string>
+    <string name="customization">Personalización</string>
+    <string name="info">Info</string>
+    <string name="zen">Zen</string>
+    <string name="choose_theme">Elige tu tema</string>
+    <string name="choose_theme_desc">El tema seleccionado se establecerá automáticamente. ¡No es necesario reaplicar!</string>
+    <string name="enable_audio_visualization">Activar visualización de audio</string>
+    <string name="enable_audio_visualization_desc">Las ondas bailarán al ritmo de la música. Requiere permisos de micrófono y puede consumir más batería.</string>
+    <string name="reverse_color_order_desc">Invierte el orden de la paleta de colores para el tema seleccionado.</string>
+    <string name="reverse_color_order">Invertir el orden de los colores</string>
+    <string name="background_image">Imagen de fondo</string>
+    <string name="background_image_desc">Selecciona una imagen de la galería para usarla como fondo.</string>
+    <string name="apply">Aplicar</string>
+    <string name="choose_image">Selecciona la imagen</string>
+    <string name="original_code_desc">Basado en Music Visualization Wallpapers del Android Open Source Project</string>
+    <string name="custom_theming">Tema personalizado</string>
+    <string name="custom_theming_desc">Usa tus propios colores en lugar de los temas predefinidos. Esto puede generar combinaciones de color feas, no me hago responsable por ello!</string>
+    <string name="configure_custom_colors_desc">Escoge los colores que deseas usar para el tema personalizado.</string>
+    <string name="edit_custom_colors">Editar Colores Personalizados</string>
+    <string name="gradient_preview">Vista previa del gradiente</string>
+    <string name="edge">Borde</string>
+    <string name="middle">Medio</string>
+    <string name="center">Centro</string>
+    <string name="quick_presets">Opciones rápidas</string>
+    <string name="color_red">Rojo: %1$d</string>
+    <string name="color_green">Verde: %1$d</string>
+    <string name="color_blue">Azul: %1$d</string>
+    <string name="save_colors">Guardar Colores</string>
+    <string name="cancel">Cancelar</string>
+    <string name="hex_color">Color HEX</string>
+    <string name="current_color">Color actual</string>
+    <string name="zen_mode_description">Toca en cualquier lado para salir del modo Zen.</string>
+    <string name="developer">Desarrollador</string>
+</resources>

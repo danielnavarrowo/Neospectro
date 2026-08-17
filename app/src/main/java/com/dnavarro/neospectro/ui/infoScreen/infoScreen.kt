@@ -192,7 +192,7 @@ fun InfoScreen(
                                     color = colorScheme.onSurface,
                                 )
                                 Text(
-                                    "Developer",
+                                    stringResource(R.string.developer),
                                     style = typography.labelLarge,
                                     color = colorScheme.secondary
                                 )

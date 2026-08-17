@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -35,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.data.SettingsRepository
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 import kotlinx.coroutines.delay
@@ -170,7 +172,7 @@ fun ZenScreen(
                 .padding(bottom = 48.dp)
         ) {
             Text(
-                text = "Tap anywhere to exit Zen mode",
+                text = stringResource(R.string.zen_mode_description),
                 color = Color.White.copy(alpha = 0.7f),
                 style = MaterialTheme.typography.bodyMedium
             )
