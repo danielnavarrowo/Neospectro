@@ -25,8 +25,8 @@ android {
         applicationId = "com.dnavarro.neospectro"
         minSdk = 27
         targetSdk = 37
-        versionCode = 9
-        versionName = "1.4.1"
+        versionCode = 10
+        versionName = "1.4.2"
     }
 
     signingConfigs {
@@ -60,15 +60,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-
-    splits {
-        abi {
-            isEnable = true
-            reset()
-            include( "arm64-v8a", "x86_64", "x86")
-            isUniversalApk = false
-        }
     }
 }
 
