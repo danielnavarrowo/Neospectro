@@ -47,7 +47,6 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.currentWindowSize
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.rememberTooltipState
@@ -63,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -110,7 +110,7 @@ fun AppScreen(
     val layoutDirection = LocalLayoutDirection.current
     val systemBarsInsets = WindowInsets.systemBars.asPaddingValues()
     val windowSize = with(LocalDensity.current) {
-        currentWindowSize().toSize().toDpSize()
+        LocalWindowInfo.current.containerSize.toSize().toDpSize()
     }
     val layoutType = if (windowSize.width >= 1200.dp) {
             NavigationSuiteType.WideNavigationRailExpanded

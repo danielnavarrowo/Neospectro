@@ -161,8 +161,7 @@ fun ThemesCarousel(
             CarouselItem(3, R.drawable.pink, R.string.pink, Constants.THEME_PINK),
             CarouselItem(4, R.drawable.cyan, R.string.cyan, Constants.THEME_CYAN),
             CarouselItem(5, R.drawable.yellow, R.string.yellow, Constants.THEME_YELLOW),
-            CarouselItem(6, R.drawable.purple, R.string.purple, Constants.THEME_PURPLE),
-            //CarouselItem(7, R.drawable.purple, "Custom", Constants.THEME_CUSTOM),
+            CarouselItem(6, R.drawable.purple, R.string.purple, Constants.THEME_PURPLE)
         )
     }
 
