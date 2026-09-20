@@ -24,6 +24,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.toShape
@@ -257,18 +258,42 @@ fun CustomColorPickerDialog(
                 val green = (currentColor shr 8) and 0xFF
                 val blue = currentColor and 0xFF
 
+                val redSliderState = rememberSliderState(
+                    value = red.toFloat(),
+                    trackRange = 0f..255f
+                )
+                if (!redSliderState.isDragging) {
+                    redSliderState.value = red.toFloat()
+                }
+
+                val greenSliderState = rememberSliderState(
+                    value = green.toFloat(),
+                    trackRange = 0f..255f
+                )
+                if (!greenSliderState.isDragging) {
+                    greenSliderState.value = green.toFloat()
+                }
+
+                val blueSliderState = rememberSliderState(
+                    value = blue.toFloat(),
+                    trackRange = 0f..255f
+                )
+                if (!blueSliderState.isDragging) {
+                    blueSliderState.value = blue.toFloat()
+                }
+
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(R.string.color_red, red),
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Slider(
-                        value = red.toFloat(),
+                        state = redSliderState,
                         onValueChange = { r ->
+                            redSliderState.value = r
                             val updated = (0xFF shl 24) or (r.toInt() shl 16) or (green shl 8) or blue
                             updateCurrentColor(updated)
                         },
-                        valueRange = 0f..255f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.Red,
                             activeTrackColor = Color.Red.copy(alpha = 0.7f)
@@ -280,12 +305,12 @@ fun CustomColorPickerDialog(
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Slider(
-                        value = green.toFloat(),
+                        state = greenSliderState,
                         onValueChange = { g ->
+                            greenSliderState.value = g
                             val updated = (0xFF shl 24) or (red shl 16) or (g.toInt() shl 8) or blue
                             updateCurrentColor(updated)
                         },
-                        valueRange = 0f..255f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.Green,
                             activeTrackColor = Color.Green.copy(alpha = 0.7f)
@@ -297,12 +322,12 @@ fun CustomColorPickerDialog(
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Slider(
-                        value = blue.toFloat(),
+                        state = blueSliderState,
                         onValueChange = { b ->
+                            blueSliderState.value = b
                             val updated = (0xFF shl 24) or (red shl 16) or (green shl 8) or b.toInt()
                             updateCurrentColor(updated)
                         },
-                        valueRange = 0f..255f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color(0xFF3D5AFE),
                             activeTrackColor = Color(0xFF3D5AFE).copy(alpha = 0.7f)

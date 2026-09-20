@@ -2,12 +2,10 @@ package com.dnavarro.neospectro.ui.theme
 
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.runtime.Composable
 
 object NeospectroShapeDefaults {
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     val topListItemShape: RoundedCornerShape
         @Composable get() =
             RoundedCornerShape(
@@ -20,7 +18,6 @@ object NeospectroShapeDefaults {
     //val middleListItemShape: RoundedCornerShape
       //  @Composable get() = RoundedCornerShape(shapes.extraSmall.topStart)
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     val bottomListItemShape: RoundedCornerShape
         @Composable get() =
             RoundedCornerShape(
@@ -30,7 +27,6 @@ object NeospectroShapeDefaults {
                 bottomEnd = shapes.largeIncreased.bottomEnd
             )
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     val cardShape: CornerBasedShape
         @Composable get() = shapes.largeIncreased
 }

@@ -1,7 +1,6 @@
 package com.dnavarro.neospectro.ui.theme
 
 import androidx.compose.material3.Typography
-import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
@@ -10,7 +9,6 @@ import com.dnavarro.neospectro.R
 
 val TYPOGRAPHY = Typography()
 
-@OptIn(ExperimentalTextApi::class)
 val googleFlexDisplay = FontFamily(
     Font(
         R.font.googlesansflex,
@@ -23,7 +21,6 @@ val googleFlexDisplay = FontFamily(
     )
 )
 
-@OptIn(ExperimentalTextApi::class)
 val googleFlexHeadline = FontFamily(
     Font(
         R.font.googlesansflex,
@@ -36,7 +33,6 @@ val googleFlexHeadline = FontFamily(
     )
 )
 
-@OptIn(ExperimentalTextApi::class)
 val googleFlexTitle = FontFamily(
     Font(
         R.font.googlesansflex,
@@ -49,7 +45,6 @@ val googleFlexTitle = FontFamily(
     )
 )
 
-@OptIn(ExperimentalTextApi::class)
 val googleFlexBody = FontFamily(
     Font(
         R.font.googlesansflex,
@@ -61,7 +56,6 @@ val googleFlexBody = FontFamily(
     )
 )
 
-@OptIn(ExperimentalTextApi::class)
 val googleFlexLabel = FontFamily(
     Font(
         R.font.googlesansflex,
