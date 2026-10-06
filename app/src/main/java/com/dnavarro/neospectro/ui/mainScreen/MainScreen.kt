@@ -49,13 +49,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dnavarro.neospectro.R
+import com.dnavarro.neospectro.ui.FormFactorPreviews
 import com.dnavarro.neospectro.ui.mainScreen.components.SelectThemeListItem
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
 import com.dnavarro.neospectro.ui.theme.CustomColors.switchColors
@@ -481,10 +480,7 @@ private fun LazyListScope.settingsItems(
     }
 }
 
-@Preview(
-    showSystemUi = true,
-    device = Devices.PIXEL_9_PRO
-)
+@FormFactorPreviews
 @Composable
 fun MainScreenPreview() {
     NeospectroTheme {

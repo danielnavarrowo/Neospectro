@@ -42,6 +42,9 @@ import com.dnavarro.neospectro.ui.theme.CustomColors.switchColors
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.bottomListItemShape
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
+import com.dnavarro.neospectro.ui.FormFactorPreviews
+import com.dnavarro.neospectro.ui.theme.NeospectroTheme
+import androidx.compose.material3.Surface
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -257,6 +260,18 @@ fun InfoScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@FormFactorPreviews
+@Composable
+fun InfoScreenPreview() {
+    NeospectroTheme {
+        Surface {
+            InfoScreen(
+                contentPadding = PaddingValues()
+            )
         }
     }
 }

@@ -45,6 +45,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.rememberTooltipState
@@ -58,16 +59,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -81,9 +80,6 @@ import com.dnavarro.neospectro.ui.mainScreen.MainScreen
 import com.dnavarro.neospectro.ui.zenScreen.ZenScreen
 import com.dnavarro.neospectro.utils.onBack
 
-@OptIn(
-    ExperimentalMaterial3Api::class
-)
 @Composable
 fun AppScreen(
 ) {
@@ -103,40 +99,51 @@ fun AppScreen(
         derivedStateOf { backStack.lastOrNull() == Screen.Zen }
     }
     val motionScheme = motionScheme
-    val cutoutInsets = WindowInsets.displayCutout.asPaddingValues()
-    val layoutDirection = LocalLayoutDirection.current
-    val systemBarsInsets = WindowInsets.systemBars.asPaddingValues()
-    val windowSize = with(LocalDensity.current) {
-        LocalWindowInfo.current.containerSize.toSize().toDpSize()
+
+    val adaptiveInfo = currentWindowAdaptiveInfoV2()
+    val isExpanded = adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(
+        WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND
+    )
+    val isLarge = adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(
+        WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND
+    )
+    val navLayoutType = when {
+        isZenMode -> NavigationSuiteType.None
+        isLarge -> NavigationSuiteType.WideNavigationRailExpanded
+        isExpanded -> NavigationSuiteType.WideNavigationRailCollapsed
+        else -> NavigationSuiteType.None
     }
-    val layoutType = if (windowSize.width >= 1200.dp) {
-            NavigationSuiteType.WideNavigationRailExpanded
-    } else if (windowSize.width >= 800.dp) {
-        NavigationSuiteType.WideNavigationRailCollapsed
-    } else {
-        NavigationSuiteType.None
+
+    val onNavigateTo: (Screen) -> Unit = { targetRoute ->
+        if (targetRoute == Screen.Main) {
+            if (backStack.size > 1) {
+                backStack.removeAt(1)
+            }
+        } else {
+            if (backStack.size < 2) {
+                backStack.add(targetRoute)
+            } else {
+                backStack[1] = targetRoute
+            }
+        }
     }
 
     NavigationSuiteScaffold(
-        layoutType = if (isZenMode) NavigationSuiteType.None else layoutType,
+        layoutType = navLayoutType,
         navigationSuiteItems = {
-            mainScreens.fastForEach {
+            mainScreens.fastForEach { item ->
                 item(
-                    selected = backStack.lastOrNull() == it.route,
-                    onClick = {
-                        if (backStack.size < 2) backStack.add(it.route)
-                        else backStack[1] = it.route
-                    },
+                    selected = backStack.lastOrNull() == item.route,
+                    onClick = { onNavigateTo(item.route) },
                     icon = {
                         Icon(
-                            painterResource(it.selectedIcon),
-                            stringResource(it.label)
+                            painterResource(item.selectedIcon),
+                            stringResource(item.label)
                         )
-
                     },
                     label = {
                         Text(
-                            text = stringResource(it.label),
+                            text = stringResource(item.label),
                             autoSize = TextAutoSize.StepBased(
                                 minFontSize = 12.sp,
                                 maxFontSize = 16.sp
@@ -144,10 +151,8 @@ fun AppScreen(
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 1
                         )
-
                     }
                 )
-
             }
         },
     ) {
@@ -173,97 +178,16 @@ fun AppScreen(
                 }
             },
             bottomBar = {
-                if (windowSize.width < 800.dp) {
+                if (!isExpanded) {
                     AnimatedVisibility(
-                        !isZenMode,
+                        visible = !isZenMode,
                         enter = slideInVertically(motionScheme.slowSpatialSpec()) { it },
                         exit = slideOutVertically(motionScheme.slowSpatialSpec()) { it }
                     ) {
-
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    start = cutoutInsets.calculateStartPadding(layoutDirection),
-                                    end = cutoutInsets.calculateEndPadding(layoutDirection)
-                                ),
-                            Alignment.Center
-                        ) {
-                            HorizontalFloatingToolbar(
-                                expanded = true,
-                                modifier = Modifier
-                                    .padding(
-                                        top = ScreenOffset,
-                                        bottom = systemBarsInsets.calculateBottomPadding()
-                                                + ScreenOffset
-                                    )
-                                    .zIndex(1f)
-
-                            ) {
-                                mainScreens.fastForEach { item ->
-                                    val selected by remember {
-                                        derivedStateOf { backStack.lastOrNull() == item.route }
-                                    }
-                                    TooltipBox(
-                                        positionProvider =
-                                            TooltipDefaults.rememberTooltipPositionProvider(
-                                                TooltipAnchorPosition.Above
-                                            ),
-                                        tooltip = { PlainTooltip { Text(stringResource(item.label)) } },
-                                        state = rememberTooltipState(),
-                                    )
-                                    {
-                                        ToggleButton(
-                                            checked = selected,
-                                            onCheckedChange = if (item.route != Screen.Main) {
-                                                {
-                                                    if (backStack.size < 2) backStack.add(item.route)
-                                                    else backStack[1] = item.route
-                                                }
-                                            } else {
-                                                { if (backStack.size > 1) backStack.removeAt(1) }
-                                            },
-                                            shapes = ToggleButtonShapes(
-                                               CircleShape,
-                                                CircleShape,
-                                                CircleShape
-                                            ),
-                                            modifier = Modifier.height(56.dp)
-
-
-                                        ) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Crossfade(selected) {
-                                                    if (it) Icon(
-                                                        painterResource(item.selectedIcon),
-                                                        stringResource(item.label)
-                                                    )
-                                                    else Icon(
-                                                        painterResource(item.unselectedIcon),
-                                                        stringResource(item.label)
-                                                    )
-                                                }
-                                                AnimatedVisibility(
-                                                    visible = selected,
-                                                    enter = expandHorizontally(motionScheme.defaultSpatialSpec()),
-                                                    exit = shrinkHorizontally(motionScheme.defaultSpatialSpec())
-                                                ) {
-                                                    Text(
-                                                        text = stringResource(item.label),
-                                                        fontSize = 16.sp,
-                                                        lineHeight = 24.sp,
-                                                        maxLines = 1,
-                                                        softWrap = false,
-                                                        overflow = TextOverflow.Clip,
-                                                        modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        FloatingNavigationToolbar(
+                            currentRoute = backStack.lastOrNull(),
+                            onNavigate = onNavigateTo
+                        )
                     }
                 }
             },
@@ -332,6 +256,92 @@ fun AppScreen(
                     }
                 }
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FloatingNavigationToolbar(
+    currentRoute: Any?,
+    onNavigate: (Screen) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val motionScheme = motionScheme
+    val cutoutInsets = WindowInsets.displayCutout.asPaddingValues()
+    val layoutDirection = LocalLayoutDirection.current
+    val systemBarsInsets = WindowInsets.systemBars.asPaddingValues()
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                start = cutoutInsets.calculateStartPadding(layoutDirection),
+                end = cutoutInsets.calculateEndPadding(layoutDirection)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        HorizontalFloatingToolbar(
+            expanded = true,
+            modifier = Modifier
+                .padding(
+                    top = ScreenOffset,
+                    bottom = systemBarsInsets.calculateBottomPadding() + ScreenOffset
+                )
+                .zIndex(1f)
+        ) {
+            mainScreens.fastForEach { item ->
+                val selected = currentRoute == item.route
+                TooltipBox(
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                        TooltipAnchorPosition.Above
+                    ),
+                    tooltip = { PlainTooltip { Text(stringResource(item.label)) } },
+                    state = rememberTooltipState(),
+                ) {
+                    ToggleButton(
+                        checked = selected,
+                        onCheckedChange = { onNavigate(item.route) },
+                        shapes = ToggleButtonShapes(
+                            CircleShape,
+                            CircleShape,
+                            CircleShape
+                        ),
+                        modifier = Modifier.height(56.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Crossfade(selected) { isSelected ->
+                                if (isSelected) {
+                                    Icon(
+                                        painterResource(item.selectedIcon),
+                                        stringResource(item.label)
+                                    )
+                                } else {
+                                    Icon(
+                                        painterResource(item.unselectedIcon),
+                                        stringResource(item.label)
+                                    )
+                                }
+                            }
+                            AnimatedVisibility(
+                                visible = selected,
+                                enter = expandHorizontally(motionScheme.defaultSpatialSpec()),
+                                exit = shrinkHorizontally(motionScheme.defaultSpatialSpec())
+                            ) {
+                                Text(
+                                    text = stringResource(item.label),
+                                    fontSize = 16.sp,
+                                    lineHeight = 24.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Clip,
+                                    modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
