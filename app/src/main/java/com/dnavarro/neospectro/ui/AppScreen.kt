@@ -53,11 +53,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
@@ -85,6 +87,7 @@ fun AppScreen(
 ) {
     val context = LocalContext.current
     var isLwpSet by remember { mutableStateOf(false) }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     LifecycleResumeEffect(Unit) {
         val wallpaperManager = WallpaperManager.getInstance(context)
@@ -128,6 +131,12 @@ fun AppScreen(
         }
     }
 
+    val currentRoute = backStack.lastOrNull()
+    LaunchedEffect(currentRoute) {
+        scrollBehavior.state.heightOffset = 0f
+        scrollBehavior.state.contentOffset = 0f
+    }
+
     NavigationSuiteScaffold(
         layoutType = navLayoutType,
         navigationSuiteItems = {
@@ -157,10 +166,12 @@ fun AppScreen(
         },
     ) {
         Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             containerColor = MaterialTheme.colorScheme.surfaceDim,
             topBar = {
                 if (!isZenMode) {
                     TopAppBar(
+                        scrollBehavior = scrollBehavior,
                         title = {
                             Text(
                                 text = stringResource(R.string.app_name),

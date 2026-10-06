@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
@@ -40,12 +42,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dnavarro.neospectro.ui.mainScreen.MainViewModel
 import com.dnavarro.neospectro.ui.theme.CustomColors.switchColors
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
-import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.bottomListItemShape
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
 import com.dnavarro.neospectro.ui.FormFactorPreviews
 import com.dnavarro.neospectro.ui.theme.NeospectroTheme
 import androidx.compose.material3.Surface
-import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -65,12 +65,16 @@ fun InfoScreen(
 
         ) { innerPadding ->
         val uriHandler = LocalUriHandler.current
-        LazyColumn(contentPadding = innerPadding,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = 340.dp),
+            contentPadding = innerPadding,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp)) {
-            item {
+                .padding(horizontal = 16.dp)
+        ) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Box(
                     Modifier
                         .background(listItemColors.containerColor, cardShape)
@@ -84,8 +88,7 @@ fun InfoScreen(
                             painterResource(R.drawable.palette_outlined),
                             tint = colorScheme.primary,
                             contentDescription = null,
-                            modifier = Modifier
-                                .size(32.dp)
+                            modifier = Modifier.size(32.dp)
                         )
                         Spacer(Modifier.width(16.dp))
                         Column(Modifier.weight(1f)) {
@@ -122,10 +125,13 @@ fun InfoScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(32.dp))
             }
             item {
-                Box(Modifier.background(listItemColors.containerColor, topListItemShape).clickable(onClick = {})) {
+                Box(
+                    Modifier
+                        .background(listItemColors.containerColor, cardShape)
+                        .clickable(onClick = {})
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(16.dp)
@@ -156,7 +162,6 @@ fun InfoScreen(
                         }
                         Spacer(Modifier.weight(1f))
                         Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-
                             FilledTonalIconButton(
                                 onClick = { uriHandler.openUri("https://github.com/danielnavarrowo/neospectro") },
                                 shapes = IconButtonDefaults.shapes()
@@ -172,7 +177,11 @@ fun InfoScreen(
                 }
             }
             item {
-                Box(Modifier.background(listItemColors.containerColor, bottomListItemShape).clickable(onClick = {})) {
+                Box(
+                    Modifier
+                        .background(listItemColors.containerColor, cardShape)
+                        .clickable(onClick = {})
+                ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -202,20 +211,15 @@ fun InfoScreen(
                             }
                             Spacer(Modifier.weight(1f))
                         }
-                        Spacer(Modifier.height(8.dp))
-                        Row {
-                            Spacer(Modifier.width((64 + 16).dp))
-
-                        }
                     }
                 }
             }
-
-
-
             item {
-                Spacer(Modifier.height(32.dp))
-                Box(Modifier.background(listItemColors.containerColor, cardShape).clickable(onClick = {})) {
+                Box(
+                    Modifier
+                        .background(listItemColors.containerColor, cardShape)
+                        .clickable(onClick = {})
+                ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
@@ -242,7 +246,7 @@ fun InfoScreen(
                         }
                         Spacer(Modifier.height(8.dp))
                         Row {
-                            Spacer(Modifier.width((32+16).dp))
+                            Spacer(Modifier.width((32 + 16).dp))
                             FilledTonalIconButton(
                                 onClick = { uriHandler.openUri("http://www.apache.org/licenses/LICENSE-2.0") },
                                 shapes = IconButtonDefaults.shapes()
@@ -259,6 +263,9 @@ fun InfoScreen(
                         }
                     }
                 }
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Spacer(Modifier.height(96.dp))
             }
         }
     }
