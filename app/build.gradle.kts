@@ -16,6 +16,7 @@ val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+val releaseStoreFilePath = keystoreProperties.getProperty("storeFile")
 
 android {
     namespace = "com.dnavarro.neospectro"
@@ -30,15 +31,12 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            if (keystorePropertiesFile.exists()) {
-                val storeFilePath = keystoreProperties.getProperty("storeFile")
-                if (!storeFilePath.isNullOrEmpty()) {
-                    storeFile = file(storeFilePath)
-                    storePassword = keystoreProperties.getProperty("storePassword")
-                    keyAlias = keystoreProperties.getProperty("keyAlias")
-                    keyPassword = keystoreProperties.getProperty("keyPassword")
-                }
+        if (!releaseStoreFilePath.isNullOrEmpty()) {
+            create("release") {
+                storeFile = file(releaseStoreFilePath)
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
             }
         }
     }
