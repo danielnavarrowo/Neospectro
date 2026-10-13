@@ -16,7 +16,7 @@ val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
-val releaseStoreFilePath = keystoreProperties.getProperty("storeFile")
+val releaseStoreFilePath: String? = keystoreProperties.getProperty("storeFile")
 
 android {
     namespace = "com.dnavarro.neospectro"
