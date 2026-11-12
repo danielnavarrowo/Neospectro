@@ -1,15 +1,13 @@
 package com.dnavarro.neospectro.ui.mainScreen
 
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.dnavarro.neospectro.data.SettingsRepository
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -17,50 +15,16 @@ class MainViewModel(
 ) : ViewModel() {
 
     companion object {
-        fun provideFactory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return MainViewModel(SettingsRepository.getInstance(context.applicationContext)) as T
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val appContext = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                MainViewModel(SettingsRepository.getInstance(appContext))
             }
         }
+
     }
 
-    val uiState: StateFlow<MainUiState> = combine(
-        settingsRepository.selectedTheme,
-        settingsRepository.reverseColors,
-        settingsRepository.audioVizEnabled,
-        settingsRepository.hasBgImage,
-        settingsRepository.bgImageTrigger,
-        settingsRepository.isCustomThemeEnabled,
-        settingsRepository.customEdgeColor,
-        settingsRepository.customMiddleColor,
-        settingsRepository.customCenterColor
-    ) { args: Array<Any> ->
-        MainUiState(
-            selectedTheme = args[0] as String,
-            reverseColors = args[1] as Boolean,
-            audioVizEnabled = args[2] as Boolean,
-            hasBgImage = args[3] as Boolean,
-            bgImageTrigger = args[4] as Int,
-            isCustomThemeEnabled = args[5] as Boolean,
-            customEdgeColor = args[6] as Int,
-            customMiddleColor = args[7] as Int,
-            customCenterColor = args[8] as Int
-        )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = MainUiState(
-            selectedTheme = settingsRepository.getTheme(),
-            reverseColors = settingsRepository.isReverseColors(),
-            audioVizEnabled = settingsRepository.isAudioVizEnabled(),
-            hasBgImage = settingsRepository.hasBgImage(),
-            isCustomThemeEnabled = settingsRepository.isCustomThemeEnabled(),
-            customEdgeColor = settingsRepository.getCustomEdgeColor(),
-            customMiddleColor = settingsRepository.getCustomMiddleColor(),
-            customCenterColor = settingsRepository.getCustomCenterColor()
-        )
-    )
+    val uiState: StateFlow<MainUiState> = settingsRepository.uiState
 
     fun updateCustomThemeEnabled(enabled: Boolean) {
         settingsRepository.updateCustomThemeEnabled(enabled)

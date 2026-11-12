@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,9 +36,11 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.data.SettingsRepository
+import com.dnavarro.neospectro.data.ThemeRepository
+import com.dnavarro.neospectro.data.WaveTheme
 import com.dnavarro.neospectro.renderer.GLES20Renderer
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -59,23 +62,32 @@ fun ZenScreen(
         showHint = false
     }
 
-    val currentTheme by settingsRepository.selectedTheme.collectAsStateWithLifecycle()
-    val reverseColors by settingsRepository.reverseColors.collectAsStateWithLifecycle()
-    val audioVizEnabled by settingsRepository.audioVizEnabled.collectAsStateWithLifecycle()
-    val isCustomThemeEnabled by settingsRepository.isCustomThemeEnabled.collectAsStateWithLifecycle()
-    val customEdgeColor by settingsRepository.customEdgeColor.collectAsStateWithLifecycle()
-    val customMiddleColor by settingsRepository.customMiddleColor.collectAsStateWithLifecycle()
-    val customCenterColor by settingsRepository.customCenterColor.collectAsStateWithLifecycle()
+    val currentTheme by settingsRepository.selectedTheme.collectAsState()
+    val reverseColors by settingsRepository.reverseColors.collectAsState()
+    val audioVizEnabled by settingsRepository.audioVizEnabled.collectAsState()
+    val isCustomThemeEnabled by settingsRepository.isCustomThemeEnabled.collectAsState()
+    val customEdgeColor by settingsRepository.customEdgeColor.collectAsState()
+    val customMiddleColor by settingsRepository.customMiddleColor.collectAsState()
+    val customCenterColor by settingsRepository.customCenterColor.collectAsState()
 
     val theme = remember(currentTheme, isCustomThemeEnabled, customEdgeColor, customMiddleColor, customCenterColor) {
-        settingsRepository.getActiveWaveTheme()
+        if (isCustomThemeEnabled) {
+            WaveTheme(
+                id = Constants.THEME_CUSTOM,
+                edgeColor = customEdgeColor,
+                middleColor = customMiddleColor,
+                centerColor = customCenterColor
+            )
+        } else {
+            ThemeRepository.getTheme(currentTheme)
+        }
     }
-    val edge = remember(theme, reverseColors) { if (reverseColors) theme.centerColor else theme.edgeColor }
-    val center = remember(theme, reverseColors) { if (reverseColors) theme.edgeColor else theme.centerColor }
+    val edge = if (reverseColors) theme.centerColor else theme.edgeColor
+    val center = if (reverseColors) theme.edgeColor else theme.centerColor
 
-    val renderer = remember { GLES20Renderer(context) }
+    val renderer = remember(context) { GLES20Renderer(context) }
 
-    val glSurfaceView = remember {
+    val glSurfaceView = remember(context) {
         GLSurfaceView(context).apply {
             setEGLContextClientVersion(2)
             keepScreenOn = true
@@ -85,30 +97,15 @@ fun ZenScreen(
             renderer.mMiddleColor = theme.middleColor
             renderer.mCenterColor = center
 
-            val hasAudioPermission = audioVizEnabled && ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.RECORD_AUDIO
-            ) == PackageManager.PERMISSION_GRANTED
-            renderer.setAudioEnabled(hasAudioPermission)
-
             setRenderer(renderer)
             renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
         }
     }
 
-    LaunchedEffect(edge, center, theme) {
-        glSurfaceView.queueEvent {
-            renderer.updateTextureColor(edge, theme.middleColor, center)
-        }
-    }
-
-    LaunchedEffect(audioVizEnabled) {
-        val hasAudioPermission = audioVizEnabled && ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.RECORD_AUDIO
-        ) == PackageManager.PERMISSION_GRANTED
-        renderer.setAudioEnabled(hasAudioPermission)
-    }
+    val hasAudioPermission = audioVizEnabled && ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.RECORD_AUDIO
+    ) == PackageManager.PERMISSION_GRANTED
 
     // Handle Immersive Fullscreen (hide status/navigation bar)
     DisposableEffect(activity) {
@@ -128,15 +125,19 @@ fun ZenScreen(
     }
 
     // Lifecycle handling for GLSurfaceView & GLES20Renderer
-    DisposableEffect(lifecycleOwner) {
+    DisposableEffect(lifecycleOwner, glSurfaceView) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_RESUME -> {
                     glSurfaceView.onResume()
-                    renderer.setVisible(true)
+                    glSurfaceView.queueEvent {
+                        renderer.setVisible(true)
+                    }
                 }
                 Lifecycle.Event.ON_PAUSE -> {
-                    renderer.setVisible(false)
+                    glSurfaceView.queueEvent {
+                        renderer.setVisible(false)
+                    }
                     glSurfaceView.onPause()
                 }
                 else -> {}
@@ -145,7 +146,9 @@ fun ZenScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            renderer.setVisible(false)
+            glSurfaceView.queueEvent {
+                renderer.setVisible(false)
+            }
         }
     }
 
@@ -160,6 +163,12 @@ fun ZenScreen(
     ) {
         AndroidView(
             factory = { glSurfaceView },
+            update = { view ->
+                view.queueEvent {
+                    renderer.updateTextureColor(edge, theme.middleColor, center)
+                    renderer.setAudioEnabled(hasAudioPermission)
+                }
+            },
             modifier = Modifier.fillMaxSize()
         )
 

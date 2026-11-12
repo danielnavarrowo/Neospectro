@@ -3,6 +3,7 @@ package com.dnavarro.neospectro.ui.mainScreen.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -24,7 +24,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.rememberSliderState
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.toShape
@@ -36,6 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -46,9 +47,22 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.window.DialogProperties
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults
+
+private val PRESET_COLORS = listOf(
+    Color.Red, Color(0xFFFF8000), Color.Yellow, Color.Green,
+    Color.Cyan, Color(0xFF0303FF), Color(0xFF8000FF), Color.Magenta,
+    Color.White, Color.Black
+)
+
+private val TAB_LABEL_RES_IDS = intArrayOf(
+    R.string.edge,
+    R.string.middle,
+    R.string.center
+)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -71,12 +85,17 @@ fun CustomColorPickerDialog(
         else -> centerColor
     }
 
+    var hexText by remember {
+        mutableStateOf(String.format("%06X", 0xFFFFFF and currentColor))
+    }
+
     val updateCurrentColor: (Int) -> Unit = { newColor ->
         when (selectedTab) {
             0 -> edgeColor = newColor
             1 -> middleColor = newColor
             2 -> centerColor = newColor
         }
+        hexText = String.format("%06X", 0xFFFFFF and newColor)
     }
 
     AlertDialog(
@@ -126,9 +145,9 @@ fun CustomColorPickerDialog(
                                 .fillMaxWidth()
                                 .height(64.dp)
                                 .clip(NeospectroShapeDefaults.cardShape)
-                                .background(
-                                    Color(currentColor)
-                                )
+                                .drawBehind {
+                                    drawRect(Color(currentColor))
+                                }
                         )
                     }
 
@@ -144,8 +163,8 @@ fun CustomColorPickerDialog(
                                 .fillMaxWidth()
                                 .height(64.dp)
                                 .clip(NeospectroShapeDefaults.cardShape)
-                                .background(
-                                    Brush.verticalGradient(
+                                .drawWithCache {
+                                    val brush = Brush.verticalGradient(
                                         listOf(
                                             Color(edgeColor),
                                             Color(middleColor),
@@ -154,41 +173,44 @@ fun CustomColorPickerDialog(
                                             Color(edgeColor)
                                         )
                                     )
-                                )
+                                    onDrawBehind {
+                                        drawRect(brush)
+                                    }
+                                }
                         )
                     }
 
                 }
 
-
-
                 // Connected ToggleButtons for Edge / Middle / Center
-                val tabOptions = listOf(
-                    0 to stringResource(R.string.edge),
-                    1 to stringResource(R.string.middle),
-                    2 to stringResource(R.string.center)
-                )
-
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    tabOptions.forEachIndexed { index, option ->
-                        val isSelected = selectedTab == option.first
+                    TAB_LABEL_RES_IDS.forEachIndexed { index, labelResId ->
+                        val isSelected = selectedTab == index
                         ToggleButton(
                             checked = isSelected,
-                            onCheckedChange = { selectedTab = option.first },
+                            onCheckedChange = {
+                                selectedTab = index
+                                val tabColor = when (index) {
+                                    0 -> edgeColor
+                                    1 -> middleColor
+                                    else -> centerColor
+                                }
+                                hexText = String.format("%06X", 0xFFFFFF and tabColor)
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .semantics { role = Role.RadioButton },
                             shapes = when (index) {
                                 0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                tabOptions.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                TAB_LABEL_RES_IDS.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
                                 else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                             },
                         ) {
                             Text(
-                                option.second,
+                                stringResource(labelResId),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -202,38 +224,33 @@ fun CustomColorPickerDialog(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                val presetColors = listOf(
-                    Color.Red, Color(0xFFFF8000), Color.Yellow, Color.Green,
-                    Color.Cyan, Color(0xFF0303FF), Color(0xFF8000FF), Color.Magenta,
-                    Color.White, Color.Black
-                )
-                LazyRow(
+                val swatchShape = MaterialShapes.Cookie12Sided.toShape()
+                val secondaryColor = MaterialTheme.colorScheme.secondary
+                Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
                 ) {
-                    presetColors.forEach { color ->
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(MaterialShapes.Cookie12Sided.toShape())
-                                    .background(color)
-                                    .border(
-                                        if (currentColor == color.toArgb()) 2.dp else 0.dp,
-                                        if (currentColor == color.toArgb()) MaterialTheme.colorScheme.secondary else color,
-                                        MaterialShapes.Cookie12Sided.toShape()
-                                    )
-                                    .clickable { updateCurrentColor(color.toArgb()) }
-                            )
-                        }
+                    PRESET_COLORS.fastForEach { color ->
+                        val colorArgb = color.toArgb()
+                        val isSelectedSwatch = currentColor == colorArgb
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(swatchShape)
+                                .background(color)
+                                .border(
+                                    if (isSelectedSwatch) 2.dp else 0.dp,
+                                    if (isSelectedSwatch) secondaryColor else color,
+                                    swatchShape
+                                )
+                                .clickable { updateCurrentColor(colorArgb) }
+                        )
                     }
                 }
 
                 // HEX Color TextField
-                var hexText by remember(currentColor) {
-                    mutableStateOf(String.format("%06X", 0xFFFFFF and currentColor))
-                }
-
                 OutlinedTextField(
                     value = hexText,
                     onValueChange = { newValue ->
@@ -258,42 +275,21 @@ fun CustomColorPickerDialog(
                 val green = (currentColor shr 8) and 0xFF
                 val blue = currentColor and 0xFF
 
-                val redSliderState = rememberSliderState(
-                    value = red.toFloat(),
-                    trackRange = 0f..255f
-                )
-                if (!redSliderState.isDragging) {
-                    redSliderState.value = red.toFloat()
-                }
-
-                val greenSliderState = rememberSliderState(
-                    value = green.toFloat(),
-                    trackRange = 0f..255f
-                )
-                if (!greenSliderState.isDragging) {
-                    greenSliderState.value = green.toFloat()
-                }
-
-                val blueSliderState = rememberSliderState(
-                    value = blue.toFloat(),
-                    trackRange = 0f..255f
-                )
-                if (!blueSliderState.isDragging) {
-                    blueSliderState.value = blue.toFloat()
-                }
-
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(R.string.color_red, red),
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Slider(
-                        state = redSliderState,
+                        value = red.toFloat(),
                         onValueChange = { r ->
-                            redSliderState.value = r
-                            val updated = (0xFF shl 24) or (r.toInt() shl 16) or (green shl 8) or blue
-                            updateCurrentColor(updated)
+                            val newR = r.toInt()
+                            if (newR != red) {
+                                val updated = (0xFF shl 24) or (newR shl 16) or (green shl 8) or blue
+                                updateCurrentColor(updated)
+                            }
                         },
+                        valueRange = 0f..255f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.Red,
                             activeTrackColor = Color.Red.copy(alpha = 0.7f)
@@ -305,12 +301,15 @@ fun CustomColorPickerDialog(
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Slider(
-                        state = greenSliderState,
+                        value = green.toFloat(),
                         onValueChange = { g ->
-                            greenSliderState.value = g
-                            val updated = (0xFF shl 24) or (red shl 16) or (g.toInt() shl 8) or blue
-                            updateCurrentColor(updated)
+                            val newG = g.toInt()
+                            if (newG != green) {
+                                val updated = (0xFF shl 24) or (red shl 16) or (newG shl 8) or blue
+                                updateCurrentColor(updated)
+                            }
                         },
+                        valueRange = 0f..255f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color.Green,
                             activeTrackColor = Color.Green.copy(alpha = 0.7f)
@@ -322,12 +321,15 @@ fun CustomColorPickerDialog(
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Slider(
-                        state = blueSliderState,
+                        value = blue.toFloat(),
                         onValueChange = { b ->
-                            blueSliderState.value = b
-                            val updated = (0xFF shl 24) or (red shl 16) or (green shl 8) or b.toInt()
-                            updateCurrentColor(updated)
+                            val newB = b.toInt()
+                            if (newB != blue) {
+                                val updated = (0xFF shl 24) or (red shl 16) or (green shl 8) or newB
+                                updateCurrentColor(updated)
+                            }
                         },
+                        valueRange = 0f..255f,
                         colors = SliderDefaults.colors(
                             thumbColor = Color(0xFF3D5AFE),
                             activeTrackColor = Color(0xFF3D5AFE).copy(alpha = 0.7f)
@@ -342,3 +344,4 @@ fun CustomColorPickerDialog(
             .padding(16.dp)
     )
 }
+

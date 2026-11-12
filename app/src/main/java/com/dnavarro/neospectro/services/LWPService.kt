@@ -3,10 +3,10 @@ import android.Manifest
 import android.app.WallpaperColors
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import com.dnavarro.neospectro.Constants
 import com.dnavarro.neospectro.renderer.GLES20Renderer
+import com.dnavarro.neospectro.utils.decodeSampledBitmapFromFile
 
 class LWPService : OpenGLES2WallpaperService() {
     override fun onCreateEngine(): Engine {
@@ -18,6 +18,12 @@ class LWPService : OpenGLES2WallpaperService() {
         private lateinit var settingsRepository: com.dnavarro.neospectro.data.SettingsRepository
         private var currentTheme: String = Constants.THEME_ICE
         private var reverseColors: Boolean = false
+        private var lastAppliedEdgeColor: Int = 0
+        private var lastAppliedMiddleColor: Int = 0
+        private var lastAppliedCenterColor: Int = 0
+        private var hasAppliedTheme: Boolean = false
+        private var lastAppliedHasBg: Boolean? = null
+        private var lastAppliedBgTrigger: Int = -1
 
         override fun onCreate(surfaceHolder: android.view.SurfaceHolder?) {
             super.onCreate(surfaceHolder)
@@ -38,11 +44,15 @@ class LWPService : OpenGLES2WallpaperService() {
             renderer!!.mEdgeColor = edge
             renderer!!.mMiddleColor = theme.middleColor
             renderer!!.mCenterColor = center
+            lastAppliedEdgeColor = edge
+            lastAppliedMiddleColor = theme.middleColor
+            lastAppliedCenterColor = center
+            hasAppliedTheme = true
 
             setRenderer(renderer!!)
             // Initial check for audio
             checkAudioPermission()
-            checkAndUpdateBgImage()
+            checkAndUpdateBgImage(force = true)
         }
 
         override fun onDestroy() {
@@ -61,7 +71,7 @@ class LWPService : OpenGLES2WallpaperService() {
                     checkAudioPermission()
                 }
                 Constants.PREF_HAS_BG_IMAGE -> {
-                    checkAndUpdateBgImage()
+                    checkAndUpdateBgImage(force = true)
                 }
             }
         }
@@ -79,32 +89,37 @@ class LWPService : OpenGLES2WallpaperService() {
 
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
-            renderer?.setVisible(visible)
+            queueEvent {
+                renderer?.setVisible(visible)
+            }
             if (visible) {
                  checkAudioPermission()
                  checkAndUpdateTheme()
-                 checkAndUpdateBgImage()
+                 checkAndUpdateBgImage(force = false)
             }
         }
 
-        private fun checkAndUpdateBgImage() {
+        private fun checkAndUpdateBgImage(force: Boolean = false) {
             val hasBg = settingsRepository.hasBgImage()
-            if (hasBg) {
-                val file = settingsRepository.getBackgroundImageFile()
-                if (file.exists()) {
-                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                    queueEvent {
-                        renderer?.setBackgroundImage(bitmap)
-                    }
+            val currentTrigger = settingsRepository.bgImageTrigger.value
+            if (!force && lastAppliedHasBg == hasBg && lastAppliedBgTrigger == currentTrigger) {
+                return
+            }
+            lastAppliedHasBg = hasBg
+            lastAppliedBgTrigger = currentTrigger
+
+            val file = settingsRepository.getBackgroundImageFile()
+            val displayMetrics = resources.displayMetrics
+            val reqWidth = displayMetrics.widthPixels.coerceAtLeast(1080)
+            val reqHeight = displayMetrics.heightPixels.coerceAtLeast(1920)
+
+            queueEvent {
+                val bitmap = if (hasBg && file.exists()) {
+                    decodeSampledBitmapFromFile(file, reqWidth, reqHeight)
                 } else {
-                    queueEvent {
-                        renderer?.setBackgroundImage(null)
-                    }
+                    null
                 }
-            } else {
-                queueEvent {
-                    renderer?.setBackgroundImage(null)
-                }
+                renderer?.setBackgroundImage(bitmap)
             }
         }
 
@@ -117,10 +132,23 @@ class LWPService : OpenGLES2WallpaperService() {
             reverseColors = newReverse
 
             val edge = if (reverseColors) theme.centerColor else theme.edgeColor
+            val middle = theme.middleColor
             val center = if (reverseColors) theme.edgeColor else theme.centerColor
 
+            if (hasAppliedTheme &&
+                edge == lastAppliedEdgeColor &&
+                middle == lastAppliedMiddleColor &&
+                center == lastAppliedCenterColor
+            ) {
+                return
+            }
+            lastAppliedEdgeColor = edge
+            lastAppliedMiddleColor = middle
+            lastAppliedCenterColor = center
+            hasAppliedTheme = true
+
             queueEvent {
-                renderer?.updateTextureColor(edge, theme.middleColor, center)
+                renderer?.updateTextureColor(edge, middle, center)
             }
             notifyColorsChanged()
         }
@@ -132,7 +160,9 @@ class LWPService : OpenGLES2WallpaperService() {
              if (isEnabledInSettings && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                  hasPermission = true
              }
-             renderer?.setAudioEnabled(hasPermission)
+             queueEvent {
+                 renderer?.setAudioEnabled(hasPermission)
+             }
         }
     }
 }

@@ -2,17 +2,20 @@ package com.dnavarro.neospectro.ui.mainScreen
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,39 +25,48 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.ui.FormFactorPreviews
+import com.dnavarro.neospectro.ui.mainScreen.components.CustomColorPickerDialog
+import com.dnavarro.neospectro.ui.mainScreen.components.CustomThemeListItem
 import com.dnavarro.neospectro.ui.mainScreen.components.SelectThemeListItem
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
 import com.dnavarro.neospectro.ui.theme.CustomColors.switchColors
@@ -62,18 +74,45 @@ import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.bottomListItemSh
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.topListItemShape
 import com.dnavarro.neospectro.ui.theme.NeospectroTheme
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+private val BottomSheetPreviewShape = RoundedCornerShape(12.dp)
+
+private fun decodeSampledBitmapFromFile(
+    filePath: String,
+    reqWidth: Int,
+    reqHeight: Int
+): Bitmap? {
+    val options = BitmapFactory.Options().apply {
+        inJustDecodeBounds = true
+    }
+    BitmapFactory.decodeFile(filePath, options)
+
+    val [height: Int, width: Int] = options.run { outHeight to outWidth }
+    var inSampleSize = 1
+    if (height > reqHeight || width > reqWidth) {
+        val halfHeight: Int = height / 2
+        val halfWidth: Int = width / 2
+        while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+            inSampleSize *= 2
+        }
+    }
+
+    options.inSampleSize = inSampleSize
+    options.inJustDecodeBounds = false
+    return BitmapFactory.decodeFile(filePath, options)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     contentPadding: PaddingValues,
-    viewModel: MainViewModel = viewModel(
-        factory = MainViewModel.provideFactory(androidx.compose.ui.platform.LocalContext.current)
-    )
+    viewModel: MainViewModel = viewModel(factory = MainViewModel.Factory)
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsState()
     val selectedTheme = uiState.selectedTheme
     val reverseColors = uiState.reverseColors
     val audioVizEnabled = uiState.audioVizEnabled
@@ -103,224 +142,210 @@ fun MainScreen(
         viewModel.updateAudioVizEnabled(isGranted)
     }
 
-    Scaffold(
-        topBar = { Spacer(Modifier.height(contentPadding.calculateTopPadding())) },
-        bottomBar = { Spacer(Modifier.height(contentPadding.calculateBottomPadding())) },
-        containerColor = MaterialTheme.colorScheme.surfaceDim,
-
-        ) { innerPadding ->
-
-        if (showBgSheet) {
-            val sheetState = rememberBottomSheetState(
-                initialValue = SheetValue.Hidden
-            )
-            ModalBottomSheet(
-                onDismissRequest = { showBgSheet = false },
-                sheetState = sheetState
+    if (showBgSheet) {
+        val sheetState = rememberBottomSheetState(
+            initialValue = SheetValue.Hidden
+        )
+        ModalBottomSheet(
+            onDismissRequest = { showBgSheet = false },
+            sheetState = sheetState
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                androidx.compose.foundation.layout.Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Text(
+                    stringResource(R.string.background_image),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val bottomSheetBitmap by produceState<ImageBitmap?>(
+                    initialValue = null,
+                    hasBgImage,
+                    bgImageTrigger
                 ) {
-                    Text(
-                        stringResource(R.string.background_image),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    val bgFile = File(context.filesDir, "bg_image.jpg")
-                    var bottomSheetBitmap by remember {
-                        mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(
-                            null
-                        )
-                    }
-
-                    androidx.compose.runtime.LaunchedEffect(hasBgImage, bgImageTrigger) {
-                        bottomSheetBitmap = if (bgFile.exists()) {
-                            BitmapFactory.decodeFile(bgFile.absolutePath)?.asImageBitmap()
-                        } else {
-                            null
-                        }
-                    }
-
-                    if (bottomSheetBitmap != null) {
-                        Image(
-                            bitmap = bottomSheetBitmap!!,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .fillMaxWidth(.6f)
-                                .height(400.dp)
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                    value = if (!hasBgImage) {
+                        null
                     } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.surfaceVariant,
-                                    androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(stringResource(R.string.background_image))
+                        withContext(Dispatchers.IO) {
+                            val bgFile = File(context.filesDir, "bg_image.jpg")
+                            if (bgFile.exists()) {
+                                decodeSampledBitmapFromFile(
+                                    filePath = bgFile.absolutePath,
+                                    reqWidth = 600,
+                                    reqHeight = 800
+                                )?.asImageBitmap()
+                            } else {
+                                null
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = { bgImageLauncher.launch("image/*") },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            stringResource(
-                                R.string.choose_image
-
-
-                            )
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(32.dp))
                 }
+
+                val currentBitmap = bottomSheetBitmap
+                if (currentBitmap != null) {
+                    Image(
+                        bitmap = currentBitmap,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth(.6f)
+                            .height(400.dp)
+                            .clip(BottomSheetPreviewShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                BottomSheetPreviewShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(stringResource(R.string.background_image))
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { bgImageLauncher.launch("image/*") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.choose_image))
+                }
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
+    }
 
-        if (showColorPickerDialog) {
-            com.dnavarro.neospectro.ui.mainScreen.components.CustomColorPickerDialog(
-                initialEdgeColor = customEdgeColor,
-                initialMiddleColor = customMiddleColor,
-                initialCenterColor = customCenterColor,
-                onDismissRequest = { showColorPickerDialog = false },
-                onColorsSelected = { edge, middle, center ->
-                    viewModel.updateCustomColors(edge, middle, center)
-                }
-            )
+    if (showColorPickerDialog) {
+        CustomColorPickerDialog(
+            initialEdgeColor = customEdgeColor,
+            initialMiddleColor = customMiddleColor,
+            initialCenterColor = customCenterColor,
+            onDismissRequest = { showColorPickerDialog = false },
+            onColorsSelected = { edge, middle, center ->
+                viewModel.updateCustomColors(edge, middle, center)
+            }
+        )
+    }
+
+    val isExpanded = currentWindowAdaptiveInfoV2()
+        .windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+
+    val onAudioVizClick: (Boolean) -> Unit = { enabled ->
+        if (enabled) {
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.RECORD_AUDIO
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                viewModel.updateAudioVizEnabled(true)
+            } else {
+                launcher.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        } else {
+            viewModel.updateAudioVizEnabled(false)
         }
+    }
 
-        BoxWithConstraints(
+    if (isExpanded) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (isCustomThemeEnabled) {
+                CustomThemeListItem(
+                    modifier = Modifier
+                        .padding(contentPadding)
+                        .weight(1f),
+                    edgeColor = customEdgeColor,
+                    middleColor = customMiddleColor,
+                    centerColor = customCenterColor,
+                    onEditColorsClick = { showColorPickerDialog = true }
+                )
+            } else {
+                SelectThemeListItem(
+                    modifier = Modifier
+                        .padding(contentPadding)
+                        .weight(1f),
+                    selectedTheme = selectedTheme,
+                    onThemeSelected = { theme ->
+                        viewModel.updateTheme(theme)
+                    }
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(contentPadding),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                SettingsItemsSection(
+                    audioVizEnabled = audioVizEnabled,
+                    hasBgImage = hasBgImage,
+                    reverseColors = reverseColors,
+                    onAudioVizClick = onAudioVizClick,
+                    onHasBgImageClick = { viewModel.updateHasBgImage(it) },
+                    onReverseColorsClick = { viewModel.updateReverseColors(it) },
+                    onShowBgSheet = { showBgSheet = true }
+                )
+            }
+        }
+    } else {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(contentPadding),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            if (maxWidth > 800.dp) {
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-
-
-                    if (isCustomThemeEnabled) {
-                        com.dnavarro.neospectro.ui.mainScreen.components.CustomThemeListItem(
-                            modifier = Modifier.padding(innerPadding).weight(1f),
-                            edgeColor = customEdgeColor,
-                            middleColor = customMiddleColor,
-                            centerColor = customCenterColor,
-                            onEditColorsClick = { showColorPickerDialog = true }
-                        )
-                    } else {
-                        SelectThemeListItem(
-                            modifier = Modifier.padding(innerPadding).weight(1f),
-                            selectedTheme = selectedTheme,
-                            onThemeSelected = { theme ->
-                                viewModel.updateTheme(theme)
-                            }
-                        )
-                    }
-
-                    LazyColumn(
-                        contentPadding = innerPadding,
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        settingsItems(
-                            audioVizEnabled = audioVizEnabled,
-                            hasBgImage = hasBgImage,
-                            reverseColors = reverseColors,
-                            onAudioVizClick = { enabled ->
-                                if (enabled) {
-                                    if (ContextCompat.checkSelfPermission(
-                                            context,
-                                            Manifest.permission.RECORD_AUDIO
-                                        ) == PackageManager.PERMISSION_GRANTED
-                                    ) {
-                                        viewModel.updateAudioVizEnabled(true)
-                                    } else {
-                                        launcher.launch(Manifest.permission.RECORD_AUDIO)
-                                    }
-                                } else {
-                                    viewModel.updateAudioVizEnabled(false)
-                                }
-                            },
-                            onHasBgImageClick = { viewModel.updateHasBgImage(it) },
-                            onReverseColorsClick = { viewModel.updateReverseColors(it) },
-                            onShowBgSheet = { showBgSheet = true }
-                        )
-                    }
-                }
+            if (isCustomThemeEnabled) {
+                CustomThemeListItem(
+                    edgeColor = customEdgeColor,
+                    middleColor = customMiddleColor,
+                    centerColor = customCenterColor,
+                    onEditColorsClick = { showColorPickerDialog = true }
+                )
             } else {
-                LazyColumn(
-                    contentPadding = innerPadding,
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    item {
-                        if (isCustomThemeEnabled) {
-                            com.dnavarro.neospectro.ui.mainScreen.components.CustomThemeListItem(
-                                edgeColor = customEdgeColor,
-                                middleColor = customMiddleColor,
-                                centerColor = customCenterColor,
-                                onEditColorsClick = { showColorPickerDialog = true }
-                            )
-                        } else {
-                            SelectThemeListItem(
-                                selectedTheme = selectedTheme,
-                                onThemeSelected = { theme ->
-                                    viewModel.updateTheme(theme)
-                                }
-                            )
-                        }
-                        Spacer(
-                            modifier = Modifier.height(16.dp)
-                        )
+                SelectThemeListItem(
+                    selectedTheme = selectedTheme,
+                    onThemeSelected = { theme ->
+                        viewModel.updateTheme(theme)
                     }
-
-                    settingsItems(
-                        audioVizEnabled = audioVizEnabled,
-                        hasBgImage = hasBgImage,
-                        reverseColors = reverseColors,
-                        onAudioVizClick = { enabled ->
-                            if (enabled) {
-                                if (ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.RECORD_AUDIO
-                                    ) == PackageManager.PERMISSION_GRANTED
-                                ) {
-                                    viewModel.updateAudioVizEnabled(true)
-                                } else {
-                                    launcher.launch(Manifest.permission.RECORD_AUDIO)
-                                }
-                            } else {
-                                viewModel.updateAudioVizEnabled(false)
-                            }
-                        },
-                        onHasBgImageClick = { viewModel.updateHasBgImage(it) },
-                        onReverseColorsClick = { viewModel.updateReverseColors(it) },
-                        onShowBgSheet = { showBgSheet = true }
-                    )
-                    item {
-                        Spacer(Modifier.height(128.dp))
-                    }
-                }
+                )
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SettingsItemsSection(
+                audioVizEnabled = audioVizEnabled,
+                hasBgImage = hasBgImage,
+                reverseColors = reverseColors,
+                onAudioVizClick = onAudioVizClick,
+                onHasBgImageClick = { viewModel.updateHasBgImage(it) },
+                onReverseColorsClick = { viewModel.updateReverseColors(it) },
+                onShowBgSheet = { showBgSheet = true }
+            )
+
+            Spacer(Modifier.height(128.dp))
         }
     }
 }
 
-private fun LazyListScope.settingsItems(
+@Composable
+private fun SettingsItemsSection(
     audioVizEnabled: Boolean,
     hasBgImage: Boolean,
     reverseColors: Boolean,
@@ -329,65 +354,55 @@ private fun LazyListScope.settingsItems(
     onReverseColorsClick: (Boolean) -> Unit,
     onShowBgSheet: () -> Unit,
 ) {
-    item {
-        val item = SettingsSwitch(
-            checked = audioVizEnabled,
-            icon = R.drawable.graphic_eq,
-            label = R.string.enable_audio_visualization,
-            description = R.string.enable_audio_visualization_desc,
-            onClick = onAudioVizClick
-        )
-        ListItem(
-            modifier = Modifier.clip(topListItemShape),
-            leadingContent = {
-                Icon(painterResource(item.icon), contentDescription = null)
-            },
-            trailingContent = {
-                Switch(
-                    checked = item.checked,
-                    onCheckedChange = { item.onClick(it) },
-                    thumbContent = {
-                        if (item.checked) {
-                            Icon(
-                                painter = painterResource(R.drawable.check),
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        } else {
-                            Icon(
-                                painter = painterResource(R.drawable.clear),
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    },
-                    colors = switchColors
-                )
-            },
-            supportingContent = { Text(stringResource(item.description)) },
-            colors = listItemColors,
-            content = {
-                Text(
-                    stringResource(item.label),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            },
-        )
+    SettingsSwitchItem(
+        icon = R.drawable.graphic_eq,
+        label = R.string.enable_audio_visualization,
+        description = R.string.enable_audio_visualization_desc,
+        checked = audioVizEnabled,
+        shape = topListItemShape,
+        onCheckedChange = onAudioVizClick
+    )
+    SettingsSwitchItem(
+        icon = R.drawable.palette_outlined,
+        label = R.string.background_image,
+        description = R.string.background_image_desc,
+        checked = hasBgImage,
+        shape = RectangleShape,
+        onCheckedChange = onHasBgImageClick,
+        onRowClick = onShowBgSheet
+    )
+    SettingsSwitchItem(
+        icon = R.drawable.swap,
+        label = R.string.reverse_color_order,
+        description = R.string.reverse_color_order_desc,
+        checked = reverseColors,
+        shape = bottomListItemShape,
+        onCheckedChange = onReverseColorsClick
+    )
+}
+
+@Composable
+private fun SettingsSwitchItem(
+    @DrawableRes icon: Int,
+    @StringRes label: Int,
+    @StringRes description: Int,
+    checked: Boolean,
+    shape: Shape,
+    onCheckedChange: (Boolean) -> Unit,
+    onRowClick: (() -> Unit)? = null
+) {
+    val rowModifier = if (onRowClick != null) {
+        Modifier.clickable(onClick = onRowClick)
+    } else {
+        Modifier.clip(shape)
     }
-    item {
-        val item = SettingsSwitch(
-            checked = hasBgImage,
-            icon = R.drawable.palette_outlined,
-            label = R.string.background_image,
-            description = R.string.background_image_desc,
-            onClick = onHasBgImageClick
-        )
-        ListItem(
-            modifier = Modifier.clickable { onShowBgSheet() },
-            leadingContent = {
-                Icon(painterResource(item.icon), contentDescription = null)
-            },
-            trailingContent = {
+    ListItem(
+        modifier = rowModifier,
+        leadingContent = {
+            Icon(painterResource(icon), contentDescription = null)
+        },
+        trailingContent = {
+            if (onRowClick != null) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -401,83 +416,46 @@ private fun LazyListScope.settingsItems(
                             .background(MaterialTheme.colorScheme.outlineVariant)
                     )
 
-                    Switch(
-                        checked = item.checked,
-                        onCheckedChange = { item.onClick(it) },
-                        thumbContent = {
-                            if (item.checked) {
-                                Icon(
-                                    painter = painterResource(R.drawable.check),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(R.drawable.clear),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(SwitchDefaults.IconSize),
-                                )
-                            }
-                        },
-                        colors = switchColors
+                    SettingsThumbSwitch(
+                        checked = checked,
+                        onCheckedChange = onCheckedChange
                     )
                 }
-            },
-            supportingContent = { Text(stringResource(item.description)) },
-            colors = listItemColors,
-            content = {
-                Text(
-                    stringResource(item.label),
-                    style = MaterialTheme.typography.titleMedium
+            } else {
+                SettingsThumbSwitch(
+                    checked = checked,
+                    onCheckedChange = onCheckedChange
                 )
-            },
-        )
-    }
-    item {
-        val item = SettingsSwitch(
-            checked = reverseColors,
-            icon = R.drawable.swap,
-            label = R.string.reverse_color_order,
-            description = R.string.reverse_color_order_desc,
-            onClick = onReverseColorsClick
-        )
-        ListItem(
-            modifier = Modifier.clip(bottomListItemShape),
-            leadingContent = {
-                Icon(painterResource(item.icon), contentDescription = null)
-            },
-            trailingContent = {
-                Switch(
-                    checked = item.checked,
-                    onCheckedChange = { item.onClick(it) },
-                    thumbContent = {
-                        if (item.checked) {
-                            Icon(
-                                painter = painterResource(R.drawable.check),
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        } else {
-                            Icon(
-                                painter = painterResource(R.drawable.clear),
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    },
-                    colors = switchColors
-                )
-            },
-            supportingContent = { Text(stringResource(item.description)) },
-            colors = listItemColors,
-            content = {
-                Text(
-                    stringResource(item.label),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            },
-        )
-    }
+            }
+        },
+        supportingContent = { Text(stringResource(description)) },
+        colors = listItemColors,
+        content = {
+            Text(
+                stringResource(label),
+                style = MaterialTheme.typography.titleMedium
+            )
+        },
+    )
+}
+
+@Composable
+private fun SettingsThumbSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        thumbContent = {
+            Icon(
+                painter = painterResource(if (checked) R.drawable.check else R.drawable.clear),
+                contentDescription = null,
+                modifier = Modifier.size(SwitchDefaults.IconSize),
+            )
+        },
+        colors = switchColors
+    )
 }
 
 @FormFactorPreviews
@@ -493,3 +471,4 @@ fun MainScreenPreview() {
         }
     }
 }
+

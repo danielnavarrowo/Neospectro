@@ -2,7 +2,6 @@ package com.dnavarro.neospectro.renderer
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
@@ -10,6 +9,7 @@ import android.opengl.GLUtils
 import android.opengl.Matrix
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.set
+import com.dnavarro.neospectro.utils.decodeSampledBitmapFromFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -64,7 +64,9 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     private var mHeight = 0
 
     // State
+    @Volatile
     private var mVisible = false
+    @Volatile
     private var mAudioEnabled = false
     private var mLastIsIdle = true
 
@@ -98,7 +100,8 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glClearColor(0f, 0f, 0f, 1f)
 
         // Get Density for SpectrumLogic logic
-        val density = context.resources.displayMetrics.density
+        val displayMetrics = context.resources.displayMetrics
+        val density = displayMetrics.density
         mSpectrumLogic.density = density
 
         // Load Texture from Color
@@ -112,7 +115,9 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
             val file = settingsRepository.getBackgroundImageFile()
             if (file.exists()) {
                 try {
-                    val bgBitmap = BitmapFactory.decodeFile(file.absolutePath)
+                    val reqWidth = displayMetrics.widthPixels.coerceAtLeast(1080)
+                    val reqHeight = displayMetrics.heightPixels.coerceAtLeast(1920)
+                    val bgBitmap = decodeSampledBitmapFromFile(file, reqWidth, reqHeight)
                     if (bgBitmap != null) {
                         mBgTextureId = loadTexture(bgBitmap)
                     }
@@ -294,6 +299,9 @@ class GLES20Renderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     fun updateTextureColor(edgeColor: Int, middleColor: Int, centerColor: Int) {
+        if (edgeColor == mEdgeColor && middleColor == mMiddleColor && centerColor == mCenterColor && mTextureId != 0) {
+            return
+        }
         mEdgeColor = edgeColor
         mMiddleColor = middleColor
         mCenterColor = centerColor

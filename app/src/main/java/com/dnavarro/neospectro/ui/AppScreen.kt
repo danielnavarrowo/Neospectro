@@ -16,15 +16,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.ButtonDefaults
@@ -50,10 +50,8 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,10 +59,8 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.window.core.layout.WindowSizeClass
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -75,12 +71,19 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import androidx.window.core.layout.WindowSizeClass
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.services.LWPService
 import com.dnavarro.neospectro.ui.infoScreen.InfoScreen
 import com.dnavarro.neospectro.ui.mainScreen.MainScreen
 import com.dnavarro.neospectro.ui.zenScreen.ZenScreen
 import com.dnavarro.neospectro.utils.onBack
+
+private val FloatingToolbarButtonShapes = ToggleButtonShapes(
+    CircleShape,
+    CircleShape,
+    CircleShape
+)
 
 @Composable
 fun AppScreen(
@@ -98,9 +101,8 @@ fun AppScreen(
     }
 
     val backStack = rememberNavBackStack(Screen.Main)
-    val isZenMode by remember {
-        derivedStateOf { backStack.lastOrNull() == Screen.Zen }
-    }
+    val currentRoute = backStack.lastOrNull()
+    val isZenMode = currentRoute == Screen.Zen
     val motionScheme = motionScheme
 
     val adaptiveInfo = currentWindowAdaptiveInfoV2()
@@ -117,7 +119,13 @@ fun AppScreen(
         else -> NavigationSuiteType.None
     }
 
+    val resetTopBarScroll: () -> Unit = {
+        scrollBehavior.state.heightOffset = 0f
+        scrollBehavior.state.contentOffset = 0f
+    }
+
     val onNavigateTo: (Screen) -> Unit = { targetRoute ->
+        resetTopBarScroll()
         if (targetRoute == Screen.Main) {
             if (backStack.size > 1) {
                 backStack.removeAt(1)
@@ -131,18 +139,12 @@ fun AppScreen(
         }
     }
 
-    val currentRoute = backStack.lastOrNull()
-    LaunchedEffect(currentRoute) {
-        scrollBehavior.state.heightOffset = 0f
-        scrollBehavior.state.contentOffset = 0f
-    }
-
     NavigationSuiteScaffold(
         layoutType = navLayoutType,
         navigationSuiteItems = {
             mainScreens.fastForEach { item ->
                 item(
-                    selected = backStack.lastOrNull() == item.route,
+                    selected = currentRoute == item.route,
                     onClick = { onNavigateTo(item.route) },
                     icon = {
                         Icon(
@@ -196,7 +198,7 @@ fun AppScreen(
                         exit = slideOutVertically(motionScheme.slowSpatialSpec()) { it }
                     ) {
                         FloatingNavigationToolbar(
-                            currentRoute = backStack.lastOrNull(),
+                            currentRoute = currentRoute,
                             onNavigate = onNavigateTo
                         )
                     }
@@ -232,7 +234,10 @@ fun AppScreen(
             ) { contentPadding ->
             NavDisplay(
                 backStack = backStack,
-                onBack = backStack::onBack,
+                onBack = {
+                    resetTopBarScroll()
+                    backStack.onBack()
+                },
                 transitionSpec = {
                     fadeIn(motionScheme.defaultEffectsSpec())
                         .togetherWith(fadeOut(motionScheme.defaultEffectsSpec()))
@@ -255,6 +260,7 @@ fun AppScreen(
                     entry<Screen.Zen> {
                         ZenScreen(
                             onExit = {
+                                resetTopBarScroll()
                                 if (backStack.size > 1) backStack.removeAt(1)
                             }
                         )
@@ -279,26 +285,18 @@ private fun FloatingNavigationToolbar(
     modifier: Modifier = Modifier
 ) {
     val motionScheme = motionScheme
-    val cutoutInsets = WindowInsets.displayCutout.asPaddingValues()
-    val layoutDirection = LocalLayoutDirection.current
-    val systemBarsInsets = WindowInsets.systemBars.asPaddingValues()
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                start = cutoutInsets.calculateStartPadding(layoutDirection),
-                end = cutoutInsets.calculateEndPadding(layoutDirection)
-            ),
+            .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
         contentAlignment = Alignment.Center
     ) {
         HorizontalFloatingToolbar(
             expanded = true,
             modifier = Modifier
-                .padding(
-                    top = ScreenOffset,
-                    bottom = systemBarsInsets.calculateBottomPadding() + ScreenOffset
-                )
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
+                .padding(vertical = ScreenOffset)
                 .zIndex(1f)
         ) {
             mainScreens.fastForEach { item ->
@@ -313,11 +311,7 @@ private fun FloatingNavigationToolbar(
                     ToggleButton(
                         checked = selected,
                         onCheckedChange = { onNavigate(item.route) },
-                        shapes = ToggleButtonShapes(
-                            CircleShape,
-                            CircleShape,
-                            CircleShape
-                        ),
+                        shapes = FloatingToolbarButtonShapes,
                         modifier = Modifier.height(56.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {

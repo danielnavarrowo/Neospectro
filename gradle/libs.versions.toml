@@ -1,24 +1,24 @@
 [versions]
-agp = "9.4.1"
+agp = "9.5.1"
 coreKtx = "1.19.1"
-lifecycleRuntimeKtx = "2.12.0-alpha04"
+lifecycleRuntimeKtx = "2.12.0-alpha05"
 activityCompose = "1.14.0-alpha03"
-kotlin = "2.5.0-Beta1"
+kotlin = "2.5.0-Beta2"
 composeBom = "2026.09.00"
-material3Android = "1.5.0-beta01"
-nav3Core = "1.3.0-alpha02"
-kotlinSerialization = "2.5.0-Beta1"
-kotlinxSerializationCore = "1.12.0-RC"
-material3WindowSizeClass = "1.5.0-beta01"
-material3AdaptiveNavSuite = "1.5.0-beta01"
+nav3Core = "1.3.0-alpha04"
+kotlinSerialization = "2.5.0-Beta2"
+kotlinxSerializationCore = "1.12.0"
+material3WindowSizeClass = "1.5.0-rc01"
+material3AdaptiveNavSuite = "1.5.0-rc01"
 material3Adaptive = "1.4.0-alpha03"
-material3 = "1.5.0-beta01"
+material3 = "1.5.0-rc01"
+profileinstaller = "1.4.1"
 
 [libraries]
 androidx-material3-adaptive-navigation-suite = { module = "androidx.compose.material3:material3-adaptive-navigation-suite", version.ref = "material3AdaptiveNavSuite" }
-androidx-compose-material3-android = { module = "androidx.compose.material3:material3-android", version.ref = "material3Android" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -34,6 +34,7 @@ kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 androidx-compose-material3-window-size-class1 = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3WindowSizeClass" }
 androidx-compose-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive", version.ref = "material3Adaptive" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

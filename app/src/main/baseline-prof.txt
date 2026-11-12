@@ -1,0 +1,103 @@
+# Baseline profile rules for Neospectro critical user journeys (cold start, MainScreen scrolling,
+# ThemesCarousel swiping, CustomColorPickerDialog, InfoScreen, ZenScreen, and LWPService rendering)
+
+# Activity & Core Constants
+Lcom/dnavarro/neospectro/MainActivity;
+HSPLcom/dnavarro/neospectro/MainActivity;-><init>()V
+HSPLcom/dnavarro/neospectro/MainActivity;->**(**)**
+Lcom/dnavarro/neospectro/Constants;
+HSPLcom/dnavarro/neospectro/Constants;->**(**)**
+
+# Data & Repositories
+Lcom/dnavarro/neospectro/data/SettingsRepository;
+HSPLcom/dnavarro/neospectro/data/SettingsRepository;-><init>(**)**
+HSPLcom/dnavarro/neospectro/data/SettingsRepository;->**(**)**
+Lcom/dnavarro/neospectro/data/SettingsRepository$Companion;
+HSPLcom/dnavarro/neospectro/data/SettingsRepository$Companion;->**(**)**
+Lcom/dnavarro/neospectro/data/WaveTheme;
+HSPLcom/dnavarro/neospectro/data/WaveTheme;-><init>(**)**
+HSPLcom/dnavarro/neospectro/data/WaveTheme;->**(**)**
+Lcom/dnavarro/neospectro/data/ThemeRepository;
+HSPLcom/dnavarro/neospectro/data/ThemeRepository;-><clinit>()V
+HSPLcom/dnavarro/neospectro/data/ThemeRepository;->**(**)**
+
+# App Shell, Navigation & Screens
+Lcom/dnavarro/neospectro/ui/AppScreenKt;
+HSPLcom/dnavarro/neospectro/ui/AppScreenKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/NavigationKt;
+HSPLcom/dnavarro/neospectro/ui/NavigationKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/NavItem;
+HSPLcom/dnavarro/neospectro/ui/NavItem;->**(**)**
+Lcom/dnavarro/neospectro/ui/Screen;
+HSPLcom/dnavarro/neospectro/ui/Screen;-><init>(**)**
+Lcom/dnavarro/neospectro/ui/Screen$Main;
+HSPLcom/dnavarro/neospectro/ui/Screen$Main;-><init>()V
+Lcom/dnavarro/neospectro/ui/Screen$Info;
+HSPLcom/dnavarro/neospectro/ui/Screen$Info;-><init>()V
+Lcom/dnavarro/neospectro/ui/Screen$Zen;
+HSPLcom/dnavarro/neospectro/ui/Screen$Zen;-><init>()V
+
+# MainScreen, ViewModel, UI State & Components
+Lcom/dnavarro/neospectro/ui/mainScreen/MainViewModel;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/MainViewModel;-><init>(**)**
+HSPLcom/dnavarro/neospectro/ui/mainScreen/MainViewModel;->**(**)**
+Lcom/dnavarro/neospectro/ui/mainScreen/MainViewModel$Companion;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/MainViewModel$Companion;->**(**)**
+Lcom/dnavarro/neospectro/ui/mainScreen/MainUiState;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/MainUiState;-><init>(**)**
+HSPLcom/dnavarro/neospectro/ui/mainScreen/MainUiState;->**(**)**
+Lcom/dnavarro/neospectro/ui/mainScreen/MainScreenKt;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/MainScreenKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/mainScreen/SettingsSwitch;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/SettingsSwitch;->**(**)**
+Lcom/dnavarro/neospectro/ui/mainScreen/components/MainScreenComponentsKt;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/components/MainScreenComponentsKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/mainScreen/components/CarouselItem;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/components/CarouselItem;->**(**)**
+Lcom/dnavarro/neospectro/ui/mainScreen/components/CustomColorPickerDialogKt;
+HSPLcom/dnavarro/neospectro/ui/mainScreen/components/CustomColorPickerDialogKt;->**(**)**
+
+# InfoScreen & ZenScreen
+Lcom/dnavarro/neospectro/ui/infoScreen/InfoScreenKt;
+HSPLcom/dnavarro/neospectro/ui/infoScreen/InfoScreenKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/zenScreen/ZenScreenKt;
+HSPLcom/dnavarro/neospectro/ui/zenScreen/ZenScreenKt;->**(**)**
+
+# Theme, Color, Shape & Typography
+Lcom/dnavarro/neospectro/ui/theme/ThemeKt;
+HSPLcom/dnavarro/neospectro/ui/theme/ThemeKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/theme/ColorKt;
+HSPLcom/dnavarro/neospectro/ui/theme/ColorKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/theme/CustomColors;
+HSPLcom/dnavarro/neospectro/ui/theme/CustomColors;->**(**)**
+Lcom/dnavarro/neospectro/ui/theme/ShapeKt;
+HSPLcom/dnavarro/neospectro/ui/theme/ShapeKt;->**(**)**
+Lcom/dnavarro/neospectro/ui/theme/NeospectroShapeDefaults;
+HSPLcom/dnavarro/neospectro/ui/theme/NeospectroShapeDefaults;->**(**)**
+Lcom/dnavarro/neospectro/ui/theme/TypeKt;
+HSPLcom/dnavarro/neospectro/ui/theme/TypeKt;->**(**)**
+
+# OpenGL ES 2.0 Renderer, Spectrum & Live Wallpaper Service
+Lcom/dnavarro/neospectro/renderer/GLES20Renderer;
+HSPLcom/dnavarro/neospectro/renderer/GLES20Renderer;-><init>(**)**
+HSPLcom/dnavarro/neospectro/renderer/GLES20Renderer;->**(**)**
+Lcom/dnavarro/neospectro/renderer/SpectrumLogic;
+HSPLcom/dnavarro/neospectro/renderer/SpectrumLogic;-><init>(**)**
+HSPLcom/dnavarro/neospectro/renderer/SpectrumLogic;->**(**)**
+Lcom/dnavarro/neospectro/renderer/AudioViz;
+HSPLcom/dnavarro/neospectro/renderer/AudioViz;-><init>(**)**
+HSPLcom/dnavarro/neospectro/renderer/AudioViz;->**(**)**
+Lcom/dnavarro/neospectro/services/LWPService;
+HSPLcom/dnavarro/neospectro/services/LWPService;-><init>()V
+HSPLcom/dnavarro/neospectro/services/LWPService;->**(**)**
+Lcom/dnavarro/neospectro/services/LWPService$NeospectroEngine;
+HSPLcom/dnavarro/neospectro/services/LWPService$NeospectroEngine;-><init>(**)**
+HSPLcom/dnavarro/neospectro/services/LWPService$NeospectroEngine;->**(**)**
+Lcom/dnavarro/neospectro/services/OpenGLES2WallpaperService;
+HSPLcom/dnavarro/neospectro/services/OpenGLES2WallpaperService;->**(**)**
+Lcom/dnavarro/neospectro/services/OpenGLES2WallpaperService$GLEngine;
+HSPLcom/dnavarro/neospectro/services/OpenGLES2WallpaperService$GLEngine;->**(**)**
+
+# Utilities
+Lcom/dnavarro/neospectro/utils/UtilsKt;
+HSPLcom/dnavarro/neospectro/utils/UtilsKt;->**(**)**
