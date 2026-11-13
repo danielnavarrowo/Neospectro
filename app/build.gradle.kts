@@ -26,8 +26,8 @@ android {
         applicationId = "com.dnavarro.neospectro"
         minSdk = 27
         targetSdk = 37
-        versionCode = 11
-        versionName = "1.4.3"
+        versionCode = 12
+        versionName = "1.5.0"
     }
 
     signingConfigs {
