@@ -4,9 +4,6 @@
     <string name="author" translatable="false">Daniel Navarro</string>
     <string name="customization">Customization</string>
     <string name="info">Info</string>
-    <string name="zen">Zen</string>
-    <string name="choose_theme">Choose your theme</string>
-    <string name="choose_theme_desc">The selected theme will be set automatically. No need to reapply!</string>
     <string name="enable_audio_visualization">Enable audio visualization</string>
     <string name="enable_audio_visualization_desc">The waves will dance according to the rhythm of the music. Requires microphone access permissions, and might have a bigger impact on battery life.</string>
     <string name="reverse_color_order_desc">Reverses the order of the color palette for the selected theme.</string>
@@ -18,9 +15,6 @@
 
     <string name="original_code_desc">Based on Music Visualization Wallpapers by The Android Open Source Project</string>
     <string name="custom_theming">Custom theming</string>
-    <string name="custom_theming_desc">Use your own colors instead of preset themes. This might result in ugly color combinations, that will not be my fault!</string>
-    <string name="configure_custom_colors_desc">Choose the colors you want to use for the custom theme.</string>
-    <string name="edit_custom_colors">Edit Custom Colors</string>
     <string name="gradient_preview">Gradient Preview</string>
     <string name="edge">Edge</string>
     <string name="middle">Middle</string>
@@ -34,6 +28,7 @@
     <string name="hex_color">HEX Color</string>
     <string name="current_color">Current color</string>
     <string name="zen_mode_description">Tap anywhere to exit Zen mode</string>
+    <string name="tap_and_hold_zen_hint">Tap and hold to enter Zen mode</string>
     <string name="developer">Developer</string>
     <string name="ice">Ice</string>
     <string name="acid">Acid</string>
@@ -42,4 +37,5 @@
     <string name="cyan">Cyan</string>
     <string name="yellow">Yellow</string>
     <string name="purple">Purple</string>
+    <string name="custom">Custom</string>
 </resources>

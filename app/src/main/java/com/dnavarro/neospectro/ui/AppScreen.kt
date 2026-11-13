@@ -12,12 +12,15 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -26,58 +29,62 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.motionScheme
-import androidx.compose.material3.MediumExtendedFloatingActionButton
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
-import androidx.window.core.layout.WindowSizeClass
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.services.LWPService
+import com.dnavarro.neospectro.ui.components.LiveWaveBackground
 import com.dnavarro.neospectro.ui.infoScreen.InfoScreen
 import com.dnavarro.neospectro.ui.mainScreen.MainScreen
+import com.dnavarro.neospectro.ui.mainScreen.MainViewModel
+import com.dnavarro.neospectro.ui.theme.GlassDefaults
+import com.dnavarro.neospectro.ui.theme.frostedGlass
 import com.dnavarro.neospectro.ui.zenScreen.ZenScreen
 import com.dnavarro.neospectro.utils.onBack
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 
 private val FloatingToolbarButtonShapes = ToggleButtonShapes(
     CircleShape,
@@ -85,12 +92,14 @@ private val FloatingToolbarButtonShapes = ToggleButtonShapes(
     CircleShape
 )
 
+private val ApplyButtonShape = RoundedCornerShape(20.dp)
+
 @Composable
 fun AppScreen(
+    mainViewModel: MainViewModel = viewModel(factory = MainViewModel.Factory)
 ) {
     val context = LocalContext.current
     var isLwpSet by remember { mutableStateOf(false) }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     LifecycleResumeEffect(Unit) {
         val wallpaperManager = WallpaperManager.getInstance(context)
@@ -100,32 +109,15 @@ fun AppScreen(
         onPauseOrDispose { }
     }
 
+    val uiState by mainViewModel.uiState.collectAsState()
     val backStack = rememberNavBackStack(Screen.Main)
     val currentRoute = backStack.lastOrNull()
     val isZenMode = currentRoute == Screen.Zen
+    val isInfoScreen = currentRoute == Screen.Info
     val motionScheme = motionScheme
-
-    val adaptiveInfo = currentWindowAdaptiveInfoV2()
-    val isExpanded = adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(
-        WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND
-    )
-    val isLarge = adaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(
-        WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND
-    )
-    val navLayoutType = when {
-        isZenMode -> NavigationSuiteType.None
-        isLarge -> NavigationSuiteType.WideNavigationRailExpanded
-        isExpanded -> NavigationSuiteType.WideNavigationRailCollapsed
-        else -> NavigationSuiteType.None
-    }
-
-    val resetTopBarScroll: () -> Unit = {
-        scrollBehavior.state.heightOffset = 0f
-        scrollBehavior.state.contentOffset = 0f
-    }
+    val hazeState = rememberHazeState()
 
     val onNavigateTo: (Screen) -> Unit = { targetRoute ->
-        resetTopBarScroll()
         if (targetRoute == Screen.Main) {
             if (backStack.size > 1) {
                 backStack.removeAt(1)
@@ -139,103 +131,49 @@ fun AppScreen(
         }
     }
 
-    NavigationSuiteScaffold(
-        layoutType = navLayoutType,
-        navigationSuiteItems = {
-            mainScreens.fastForEach { item ->
-                item(
-                    selected = currentRoute == item.route,
-                    onClick = { onNavigateTo(item.route) },
-                    icon = {
-                        Icon(
-                            painterResource(item.selectedIcon),
-                            stringResource(item.label)
-                        )
-                    },
-                    label = {
-                        Text(
-                            text = stringResource(item.label),
-                            autoSize = TextAutoSize.StepBased(
-                                minFontSize = 12.sp,
-                                maxFontSize = 16.sp
-                            ),
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
-                        )
-                    }
-                )
-            }
-        },
+    val onApplyWallpaper: () -> Unit = {
+        val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+        intent.putExtra(
+            WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+            ComponentName(context, LWPService::class.java)
+        )
+        context.startActivity(intent)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
     ) {
+        LiveWaveBackground(
+            uiState = uiState,
+            isActive = !isInfoScreen,
+            modifier = Modifier
+                .fillMaxSize()
+                .hazeSource(hazeState, zIndex = 0f)
+        )
+
         Scaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            containerColor = MaterialTheme.colorScheme.surfaceDim,
-            topBar = {
-                if (!isZenMode) {
-                    TopAppBar(
-                        scrollBehavior = scrollBehavior,
-                        title = {
-                            Text(
-                                text = stringResource(R.string.app_name),
-                                style = MaterialTheme.typography.displaySmall,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.padding(vertical = 24.dp)
-                            )
-                        },
-                        subtitle = {},
-                        titleHorizontalAlignment = CenterHorizontally,
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceDim
-                        )
+            containerColor = Color.Transparent,
+            bottomBar = {
+                AnimatedVisibility(
+                    visible = !isZenMode,
+                    enter = slideInVertically(motionScheme.slowSpatialSpec()) { it },
+                    exit = slideOutVertically(motionScheme.slowSpatialSpec()) { it }
+                ) {
+                    FloatingNavigationToolbar(
+                        currentRoute = currentRoute,
+                        showApplyButton = !isLwpSet,
+                        hazeState = hazeState,
+                        onNavigate = onNavigateTo,
+                        onApplyClick = onApplyWallpaper
                     )
                 }
             },
-            bottomBar = {
-                if (!isExpanded) {
-                    AnimatedVisibility(
-                        visible = !isZenMode,
-                        enter = slideInVertically(motionScheme.slowSpatialSpec()) { it },
-                        exit = slideOutVertically(motionScheme.slowSpatialSpec()) { it }
-                    ) {
-                        FloatingNavigationToolbar(
-                            currentRoute = currentRoute,
-                            onNavigate = onNavigateTo
-                        )
-                    }
-                }
-            },
-            floatingActionButton =
-                {
-                    if (!isLwpSet && !isZenMode) {
-                        MediumExtendedFloatingActionButton(
-                            onClick = {
-                                val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-                                intent.putExtra(
-                                    WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                                    ComponentName(context, LWPService::class.java)
-                                )
-                                context.startActivity(intent)
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.apply_outlined),
-                                contentDescription = "Apply",
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.size(12.dp))
-                            Text(
-                                stringResource(R.string.apply),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                    }
-                },
-
-            ) { contentPadding ->
+        ) { contentPadding ->
             NavDisplay(
                 backStack = backStack,
                 onBack = {
-                    resetTopBarScroll()
                     backStack.onBack()
                 },
                 transitionSpec = {
@@ -253,14 +191,16 @@ fun AppScreen(
                 entryProvider = entryProvider {
                     entry<Screen.Main> {
                         MainScreen(
-                            contentPadding = contentPadding
+                            contentPadding = contentPadding,
+                            hazeState = hazeState,
+                            onEnterZenMode = { onNavigateTo(Screen.Zen) },
+                            viewModel = mainViewModel
                         )
                     }
 
                     entry<Screen.Zen> {
                         ZenScreen(
                             onExit = {
-                                resetTopBarScroll()
                                 if (backStack.size > 1) backStack.removeAt(1)
                             }
                         )
@@ -268,7 +208,8 @@ fun AppScreen(
 
                     entry<Screen.Info> {
                         InfoScreen(
-                            contentPadding = contentPadding
+                            contentPadding = contentPadding,
+                            modifier = Modifier.hazeSource(hazeState, zIndex = 1f)
                         )
                     }
                 }
@@ -281,7 +222,10 @@ fun AppScreen(
 @Composable
 private fun FloatingNavigationToolbar(
     currentRoute: Any?,
+    showApplyButton: Boolean,
+    hazeState: HazeState?,
     onNavigate: (Screen) -> Unit,
+    onApplyClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val motionScheme = motionScheme
@@ -292,58 +236,105 @@ private fun FloatingNavigationToolbar(
             .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
         contentAlignment = Alignment.Center
     ) {
-        HorizontalFloatingToolbar(
-            expanded = true,
+        Row(
             modifier = Modifier
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
-                .padding(vertical = ScreenOffset)
-                .zIndex(1f)
+                .padding(horizontal = 16.dp, vertical = ScreenOffset)
+                .zIndex(1f),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            mainScreens.fastForEach { item ->
-                val selected = currentRoute == item.route
+            HorizontalFloatingToolbar(
+                expanded = true,
+                modifier = Modifier.frostedGlass(
+                    hazeState = hazeState,
+                    shape = CircleShape
+                ),
+                colors = FloatingToolbarDefaults.standardFloatingToolbarColors(
+                    toolbarContainerColor = Color.Transparent
+                ),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                mainScreens.fastForEach { item ->
+                    val selected = currentRoute == item.route
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Above
+                        ),
+                        tooltip = { PlainTooltip { Text(stringResource(item.label)) } },
+                        state = rememberTooltipState(),
+                    ) {
+                        ToggleButton(
+                            checked = selected,
+                            onCheckedChange = { onNavigate(item.route) },
+                            shapes = FloatingToolbarButtonShapes,
+                            colors = ToggleButtonDefaults.colors(
+                                containerColor = Color.Transparent,
+                                contentColor = GlassDefaults.SecondaryContentColor,
+                                checkedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                checkedContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
+                            modifier = Modifier.height(56.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Crossfade(selected) { isSelected ->
+                                    if (isSelected) {
+                                        Icon(
+                                            painterResource(item.selectedIcon),
+                                            stringResource(item.label)
+                                        )
+                                    } else {
+                                        Icon(
+                                            painterResource(item.unselectedIcon),
+                                            stringResource(item.label)
+                                        )
+                                    }
+                                }
+                                AnimatedVisibility(
+                                    visible = selected,
+                                    enter = expandHorizontally(motionScheme.defaultSpatialSpec()),
+                                    exit = shrinkHorizontally(motionScheme.defaultSpatialSpec())
+                                ) {
+                                    Text(
+                                        text = stringResource(item.label),
+                                        fontSize = 15.sp,
+                                        lineHeight = 20.sp,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Clip,
+                                        modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            AnimatedVisibility(visible = showApplyButton) {
                 TooltipBox(
                     positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                         TooltipAnchorPosition.Above
                     ),
-                    tooltip = { PlainTooltip { Text(stringResource(item.label)) } },
+                    tooltip = { PlainTooltip { Text(stringResource(R.string.apply)) } },
                     state = rememberTooltipState(),
                 ) {
-                    ToggleButton(
-                        checked = selected,
-                        onCheckedChange = { onNavigate(item.route) },
-                        shapes = FloatingToolbarButtonShapes,
-                        modifier = Modifier.height(56.dp)
+                    FloatingActionButton(
+                        onClick = onApplyClick,
+                        shape = ApplyButtonShape,
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        elevation = FloatingActionButtonDefaults.elevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 2.dp
+                        ),
+                        modifier = Modifier.size(64.dp)
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Crossfade(selected) { isSelected ->
-                                if (isSelected) {
-                                    Icon(
-                                        painterResource(item.selectedIcon),
-                                        stringResource(item.label)
-                                    )
-                                } else {
-                                    Icon(
-                                        painterResource(item.unselectedIcon),
-                                        stringResource(item.label)
-                                    )
-                                }
-                            }
-                            AnimatedVisibility(
-                                visible = selected,
-                                enter = expandHorizontally(motionScheme.defaultSpatialSpec()),
-                                exit = shrinkHorizontally(motionScheme.defaultSpatialSpec())
-                            ) {
-                                Text(
-                                    text = stringResource(item.label),
-                                    fontSize = 16.sp,
-                                    lineHeight = 24.sp,
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    overflow = TextOverflow.Clip,
-                                    modifier = Modifier.padding(start = ButtonDefaults.IconSpacing)
-                                )
-                            }
-                        }
+                        Icon(
+                            painter = painterResource(id = R.drawable.apply_outlined),
+                            contentDescription = stringResource(R.string.apply),
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }

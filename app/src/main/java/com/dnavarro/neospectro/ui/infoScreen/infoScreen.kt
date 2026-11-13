@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
@@ -25,13 +24,9 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -39,12 +34,9 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dnavarro.neospectro.R
 import com.dnavarro.neospectro.ui.FormFactorPreviews
-import com.dnavarro.neospectro.ui.mainScreen.MainViewModel
 import com.dnavarro.neospectro.ui.theme.CustomColors.listItemColors
-import com.dnavarro.neospectro.ui.theme.CustomColors.switchColors
 import com.dnavarro.neospectro.ui.theme.NeospectroShapeDefaults.cardShape
 import com.dnavarro.neospectro.ui.theme.NeospectroTheme
 
@@ -52,23 +44,17 @@ import com.dnavarro.neospectro.ui.theme.NeospectroTheme
 @Composable
 fun InfoScreen(
     contentPadding: PaddingValues,
-    viewModel: MainViewModel = viewModel(
-        factory = MainViewModel.Factory
-    )
+    modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val isCustomThemeEnabled = uiState.isCustomThemeEnabled
-
     val colors = colorScheme
     val typo = typography
     val cardContainerColor = listItemColors.containerColor
     val cardCornerShape = cardShape
-    val itemSwitchColors = switchColors
     val uriHandler = LocalUriHandler.current
     val layoutDirection = LocalLayoutDirection.current
     val gridContentPadding = PaddingValues(
         start = contentPadding.calculateStartPadding(layoutDirection) + 16.dp,
-        top = contentPadding.calculateTopPadding(),
+        top = contentPadding.calculateTopPadding() + 16.dp,
         end = contentPadding.calculateEndPadding(layoutDirection) + 16.dp,
         bottom = contentPadding.calculateBottomPadding() + 96.dp
     )
@@ -78,63 +64,10 @@ fun InfoScreen(
         contentPadding = gridContentPadding,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(colors.surfaceDim)
     ) {
-        item(
-            key = 0,
-            contentType = "theme_toggle_card",
-            span = { GridItemSpan(maxLineSpan) }
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(cardContainerColor, cardCornerShape)
-                    .clickable { viewModel.updateCustomThemeEnabled(!isCustomThemeEnabled) }
-                    .padding(16.dp)
-            ) {
-                Icon(
-                    painterResource(R.drawable.palette_outlined),
-                    tint = colors.primary,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp)
-                )
-                Spacer(Modifier.width(16.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        stringResource(R.string.custom_theming),
-                        style = typo.titleMedium,
-                        color = colors.onSurface
-                    )
-                    Text(
-                        stringResource(R.string.custom_theming_desc),
-                        style = typo.bodySmall,
-                        color = colors.onSurfaceVariant
-                    )
-                }
-                Switch(
-                    checked = isCustomThemeEnabled,
-                    onCheckedChange = { viewModel.updateCustomThemeEnabled(it) },
-                    thumbContent = {
-                        if (isCustomThemeEnabled) {
-                            Icon(
-                                painter = painterResource(R.drawable.check),
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        } else {
-                            Icon(
-                                painter = painterResource(R.drawable.clear),
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    },
-                    colors = itemSwitchColors
-                )
-            }
-        }
         item(
             key = 1,
             contentType = "info_card"
